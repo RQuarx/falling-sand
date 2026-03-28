@@ -1,0 +1,16 @@
+*
+
+!.gitignore
+!COPYING
+!meson.build
+!.clang*
+
+
+!subprojects
+!subprojects/**
+
+!src
+!src/**
+
+!include
+!include/**

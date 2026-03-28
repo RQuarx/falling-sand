@@ -1,0 +1,1 @@
+sdl_src = files('event.cc', 'renderer.cc', 'texture.cc', 'window.cc')
