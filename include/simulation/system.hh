@@ -2,7 +2,6 @@
 #include <functional>
 
 #include "simulation/board.hh"
-#include "simulation/elements/id.hh"
 
 
 namespace kei::sim
@@ -24,11 +23,7 @@ namespace kei::sim
 
         system();
 
-        [[nodiscard]]
-        auto operator[](element_id &id) const noexcept -> const element_def &;
 
-
-        [[nodiscard]] auto ids() const noexcept -> const elements::ids &;
         [[nodiscard]] auto board() const noexcept -> const board &;
 
 
@@ -41,9 +36,6 @@ namespace kei::sim
 
     private:
         class board m_board;
-
-        element_registry m_registry;
-        elements::ids    m_element_ids;
 
         std::vector<std::reference_wrapper<cell>> m_cells;
         std::vector<draw_command>                 m_draw_queue;

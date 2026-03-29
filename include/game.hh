@@ -36,6 +36,8 @@ namespace kei
 
 
         void mf_on_frame(gfx::context &ctx);
+        void mf_draw_line(sdl::size                       board_size,
+                          std::vector<sim::draw_command> &cells_to_draw);
 
         auto mf_on_mouse_motion(const sdl::event &event) -> sdl::event_return;
         auto mf_on_mouse_wheel(const sdl::event &event) -> sdl::event_return;

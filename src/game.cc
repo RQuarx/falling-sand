@@ -33,22 +33,6 @@ namespace kei
     }
 
 
-    static void
-    draw_line(sdl::size                       board_size,
-              std::vector<sim::draw_command> &cells_to_draw,
-              sim::cursor                    &cursor,
-              bool                            erase,
-              sdl::point                      a,
-              sdl::point                      b)
-    {
-        for (auto pos : views::bresenham(a, b))
-        {
-            cursor.pos = pos;
-            cursor.draw(board_size, cells_to_draw, erase);
-        }
-    }
-
-
     class logger logger { get_log_level_threshold() };
 }
 
@@ -83,9 +67,9 @@ game::game()
     m_event[SDL_EVENT_QUIT] | [](const sdl::event &) -> sdl::event_return
     { return sdl::event_return::exit_success; };
 
-    m_cursor.shape = sim::cursor::shape::circle;
-    m_cursor.size  = { .w = 20, .h = 20 };
-    m_cursor.draw_id = m_system.ids().sand;
+    m_cursor.shape   = sim::cursor::shape::circle;
+    m_cursor.size    = { .w = 20, .h = 20 };
+    m_cursor.draw_id = sim::element_registry->sand;
 }
 
 
@@ -114,14 +98,15 @@ game::run() noexcept -> int
             case sdl::event_return::success:      break;
             }
 
+
             if (m_mouse_button_down[SDL_BUTTON_LEFT]
                 || m_mouse_button_down[SDL_BUTTON_RIGHT])
             {
                 if (m_previous_cursor_pos)
-                    m_system.enqueue_draw(sig::bind(
-                        draw_line, sig::bind_to::position_1 {},
-                        sig::bind_to::position_2 {}, m_cursor, m_erase,
-                        *m_previous_cursor_pos, m_cursor.pos));
+                    m_system.enqueue_draw(
+                        sig::bind(sig::method(*this, &game::mf_draw_line),
+                                  sig::bind_to::position_1 {},
+                                  sig::bind_to::position_2 {}));
                 else
                     m_system.enqueue_draw(
                         sig::bind(sig::method(m_cursor, &sim::cursor::draw),
@@ -142,6 +127,18 @@ game::run() noexcept -> int
             return 1;
         }
     return 0;
+}
+
+
+void
+game::mf_draw_line(sdl::size                       board_size,
+                   std::vector<sim::draw_command> &cells_to_draw)
+{
+    for (auto pos : views::bresenham(*m_previous_cursor_pos, m_cursor.pos))
+    {
+        m_cursor.pos = pos;
+        m_cursor.draw(board_size, cells_to_draw, m_erase);
+    }
 }
 
 

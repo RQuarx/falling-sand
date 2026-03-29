@@ -25,16 +25,38 @@ namespace kei::sim
     };
 
 
-    class element_registry
+    namespace _impl
     {
-    public:
-        [[nodiscard]]
-        auto operator[](element_id id) const -> const element_def &;
+        class element_registry
+        {
+        public:
+            struct ids
+            {
+                ids(element_registry &reg);
 
-        [[nodiscard]]
-        auto operator<<(element_def elem) -> element_id;
 
-    private:
-        std::vector<element_def> m_elements;
-    };
+                const element_id air;
+                const element_id sand;
+            };
+
+
+            element_registry();
+
+            [[nodiscard]] auto operator->() const -> const ids *;
+
+            [[nodiscard]]
+            auto operator[](element_id id) const -> const element_def &;
+
+
+        private:
+            std::vector<element_def> m_elements;
+            ids                      m_ids;
+
+
+            [[nodiscard]] auto operator<<(element_def elem) -> element_id;
+        };
+    }
+
+
+    inline _impl::element_registry element_registry {};
 }

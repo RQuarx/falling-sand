@@ -31,18 +31,7 @@ namespace kei
 }
 
 
-system::system() : m_element_ids { m_registry }
-{ m_board.set_size({ .w = 611, .h = 383 }); }
-
-
-auto
-system::operator[](element_id &id) const noexcept -> const element_def &
-{ return m_registry[id]; }
-
-
-auto
-system::ids() const noexcept -> const elements::ids &
-{ return m_element_ids; }
+system::system() { m_board.set_size({ .w = 611, .h = 383 }); }
 
 
 auto
@@ -74,8 +63,9 @@ system::update(float dt)
 
         cell.element = cmd.id;
         cell.id      = m_cells.size();
-        cell.color   = randomize_color((*this)[cmd.id].color,
-                                       (*this)[cmd.id].color_random_range);
+        cell.color
+            = randomize_color(element_registry[cmd.id].color,
+                              element_registry[cmd.id].color_random_range);
 
         cell.temperature = 300.0F;
         cell.velocity    = { .x = 0.0F, .y = 0.0F };
@@ -92,7 +82,7 @@ system::update(float dt)
         [&](std::reference_wrapper<cell> &ref)
         {
             cell              &cell { ref.get() };
-            const element_def &element { (*this)[cell.element] };
+            const element_def &element { element_registry[cell.element] };
 
             sdl::point start { cell.pos };
 
@@ -112,7 +102,7 @@ system::update(float dt)
 
             for (auto p : views::bresenham(start, target) | std::views::drop(1))
             {
-                if (m_board[p].element != ids().air) break;
+                if (m_board[p].element != element_registry->air) break;
                 last_valid = p;
             }
 
