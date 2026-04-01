@@ -14,32 +14,24 @@ namespace kei::sdl
         auto operator=(const resource &) -> resource & = delete;
         auto
         operator=(resource &&other) noexcept -> resource &
-        {
-            m_data = std::move(other);
-        }
+        { m_data = std::move(other); }
 
 
         [[nodiscard]]
         auto
         release() -> T *
-        {
-            return m_data.release();
-        }
+        { return m_data.release(); }
 
 
         void
         reset(T *ptr = nullptr)
-        {
-            m_data.reset(ptr);
-        }
+        { m_data.reset(ptr); }
 
 
         [[nodiscard]]
         auto
         get() const -> T *
-        {
-            return m_data.get();
-        }
+        { return m_data.get(); }
 
     private:
         std::unique_ptr<T, decltype([](T *ptr) { F(ptr); })> m_data;

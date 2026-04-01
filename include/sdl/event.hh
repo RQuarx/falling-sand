@@ -29,8 +29,7 @@ namespace kei::sdl
 
 
         [[nodiscard]]
-        auto operator[](sdl::event_type type) noexcept
-            -> sig::signal_connect<signal_type>;
+        auto operator[](sdl::event_type type) noexcept -> sig::signal_connect<signal_type>;
 
 
         auto poll() -> event_return;

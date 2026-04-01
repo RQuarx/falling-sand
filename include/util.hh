@@ -13,8 +13,7 @@ namespace kei::util
         combine_hash(std::size_t &seed, T &&val)
         {
             std::hash<std::remove_reference_t<T>> h {};
-            seed ^= h(std::forward<T>(val)) + 0x9e3779b9 + (seed << 6)
-                  + (seed >> 2);
+            seed ^= h(std::forward<T>(val)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
 
 
@@ -23,8 +22,7 @@ namespace kei::util
         combine_hash(std::size_t &seed, T &&val, Ts &&...rest)
         {
             combine_hash(seed, std::forward<T>(val));
-            if constexpr (sizeof...(rest) > 0)
-                combine_hash(seed, std::forward<Ts>(rest)...);
+            if constexpr (sizeof...(rest) > 0) combine_hash(seed, std::forward<Ts>(rest)...);
         }
     }
 
@@ -37,16 +35,5 @@ namespace kei::util
         std::size_t seed { 0 };
         _impl::combine_hash(seed, std::forward<Ts>(vals)...);
         return seed;
-    }
-
-
-    template <typename T>
-    [[nodiscard]]
-    auto
-    get_aspect_ratio(T a, T b) -> std::pair<float, float>
-        requires std::is_integral_v<T>
-    {
-        float gcd { static_cast<float>(std::gcd(a, b)) };
-        return { a / gcd, b / gcd };
     }
 }

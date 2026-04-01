@@ -51,67 +51,51 @@ namespace kei::sdl
         [[nodiscard]]
         constexpr auto
         to_rgb_uint() const noexcept -> std::uint32_t
-        {
-            return (r << 16) | (g << 8) | b;
-        }
+        { return (r << 16) | (g << 8) | b; }
 
 
         [[nodiscard]]
         constexpr auto
         to_rgba_uint() const noexcept -> std::uint32_t
-        {
-            return (r << 24) | (g << 16) | (b << 8) | a;
-        }
+        { return (r << 24) | (g << 16) | (b << 8) | a; }
 
 
         [[nodiscard]]
         constexpr auto
         to_color() const noexcept -> SDL_Color
-        {
-            return { r, g, b, a };
-        }
+        { return { .r = r, .g = g, .b = b, .a = a }; }
 
 
         [[nodiscard]]
         constexpr auto
         to_fcolor() const noexcept -> SDL_FColor
-        {
-            return { r / 255.0F, g / 255.0F, b / 255.0F, a / 255.0F };
-        }
+        { return { .r = r / 255.0F, .g = g / 255.0F, .b = b / 255.0F, .a = a / 255.0F }; }
 
 
         constexpr auto
         operator==(const sdl::color &other) const noexcept -> bool
-        {
-            return r == other.r && g == other.g && b == other.b && a == other.a;
-        }
+        { return r == other.r && g == other.g && b == other.b && a == other.a; }
 
 
         constexpr
         operator SDL_Color() const noexcept
-        {
-            return to_color();
-        }
+        { return to_color(); }
 
 
         constexpr
         operator SDL_FColor() const noexcept
-        {
-            return to_fcolor();
-        }
+        { return to_fcolor(); }
 
 
         [[nodiscard]]
         constexpr auto
         lerp(color other, float t) const noexcept -> color
         {
-            auto lerp8 {
-                [](std::uint8_t a, std::uint8_t b, float t) -> std::uint8_t
-                {
-                    return static_cast<std::uint8_t>(std::lerp(
-                        static_cast<float>(a), static_cast<float>(b), t));
-                }
-            };
+            auto lerp8 { [](std::uint8_t a, std::uint8_t b, float t) -> std::uint8_t
+                         {
+                             return static_cast<std::uint8_t>(
+                                 std::lerp(static_cast<float>(a), static_cast<float>(b), t));
+                         } };
 
             return {
                 lerp8(r, other.r, t),
@@ -142,14 +126,11 @@ namespace kei::sdl
 
                                  if (hi < 0 || lo < 0) return 0;
 
-                                 return static_cast<std::uint8_t>((hi * 16)
-                                                                  + lo);
+                                 return static_cast<std::uint8_t>((hi * 16) + lo);
                              } };
 
-            if (hex.length() == 6)
-                return color { read_byte(0), read_byte(2), read_byte(4), 255 };
-            return color { read_byte(0), read_byte(2), read_byte(4),
-                           read_byte(6) };
+            if (hex.length() == 6) return color { read_byte(0), read_byte(2), read_byte(4), 255 };
+            return color { read_byte(0), read_byte(2), read_byte(4), read_byte(6) };
         }
     };
 }
@@ -157,30 +138,22 @@ namespace kei::sdl
 
 static constexpr auto
 operator""_rgb(const unsigned long long color) -> kei::sdl::color
-{
-    return kei::sdl::color::from_rgb(color);
-}
+{ return kei::sdl::color::from_rgb(color); }
 
 
 static constexpr auto
 operator""_rgba(const unsigned long long color) -> kei::sdl::color
-{
-    return kei::sdl::color::from_rgba(color);
-}
+{ return kei::sdl::color::from_rgba(color); }
 
 
 static constexpr auto
 operator""_rgb(const char *hex, std::size_t len) -> kei::sdl::color
-{
-    return kei::sdl::color::from_hex({ hex, len });
-}
+{ return kei::sdl::color::from_hex({ hex, len }); }
 
 
 static constexpr auto
 operator""_rgba(const char *hex, std::size_t len) -> kei::sdl::color
-{
-    return kei::sdl::color::from_hex({ hex, len });
-}
+{ return kei::sdl::color::from_hex({ hex, len }); }
 
 
 /* clang-format off */

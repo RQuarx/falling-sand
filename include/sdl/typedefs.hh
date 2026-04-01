@@ -29,8 +29,10 @@ namespace kei::sdl
     constexpr auto
     rect_to_frect(rect r) noexcept -> frect
     {
-        return { static_cast<float>(r.x), static_cast<float>(r.y),
-                 static_cast<float>(r.w), static_cast<float>(r.h) };
+        return { .x = static_cast<float>(r.x),
+                 .y = static_cast<float>(r.y),
+                 .w = static_cast<float>(r.w),
+                 .h = static_cast<float>(r.h) };
     }
 }
 
@@ -38,42 +40,29 @@ namespace kei::sdl
 [[nodiscard]]
 constexpr auto
 operator==(const kei::sdl::point &a, const kei::sdl::point &b) noexcept -> bool
-{
-    return a.x == b.x && a.y == b.y;
-}
+{ return a.x == b.x && a.y == b.y; }
 
 [[nodiscard]]
 constexpr auto
-operator==(const kei::sdl::fpoint &a, const kei::sdl::fpoint &b) noexcept
-    -> bool
-{
-    return a.x == b.x && a.y == b.y;
-}
+operator==(const kei::sdl::fpoint &a, const kei::sdl::fpoint &b) noexcept -> bool
+{ return a.x == b.x && a.y == b.y; }
 
 [[nodiscard]]
 constexpr auto
 operator==(const kei::sdl::size &a, const kei::sdl::size &b) noexcept -> bool
-{
-    return a.w == b.w && a.h == b.h;
-}
+{ return a.w == b.w && a.h == b.h; }
 
 [[nodiscard]]
 constexpr auto
 operator==(const kei::sdl::fsize &a, const kei::sdl::fsize &b) noexcept -> bool
-{
-    return a.w == b.w && a.h == b.h;
-}
+{ return a.w == b.w && a.h == b.h; }
 
 [[nodiscard]]
 constexpr auto
 operator==(const kei::sdl::rect &a, const kei::sdl::rect &b) noexcept -> bool
-{
-    return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
-}
+{ return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h; }
 
 [[nodiscard]]
 constexpr auto
 operator==(const kei::sdl::frect &a, const kei::sdl::frect &b) noexcept -> bool
-{
-    return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h;
-}
+{ return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h; }

@@ -16,21 +16,18 @@ namespace kei::sdl
         [[nodiscard]]
         auto size() const noexcept -> std::expected<sdl::fsize, error>;
 
-        auto set_scale_mode(SDL_ScaleMode mode) noexcept
-            -> std::optional<error>;
+        auto set_scale_mode(SDL_ScaleMode mode) noexcept -> std::optional<error>;
 
 
         [[nodiscard]]
-        auto lock(const sdl::rect *rect)
-            -> std::expected<class texture_pixel, error>;
+        auto lock(const sdl::rect *rect) -> std::expected<class texture_pixel, error>;
     };
 
 
     class texture_pixel
     {
     public:
-        texture_pixel(texture &texture, const sdl::rect *rect)
-            : m_texture { texture }
+        texture_pixel(texture &texture, const sdl::rect *rect) : m_texture { texture }
         {
             if (!SDL_LockTexture(m_texture.get(), rect, &m_pixels, &m_pitch))
                 throw sdl::error_builder["sdl::texture"]();
@@ -42,10 +39,7 @@ namespace kei::sdl
         [[nodiscard]]
         auto
         operator[](std::size_t y) -> std::uint32_t *
-        {
-            return reinterpret_cast<std::uint32_t *>(
-                static_cast<char *>(m_pixels) + (y * m_pitch));
-        }
+        { return reinterpret_cast<std::uint32_t *>(static_cast<char *>(m_pixels) + (y * m_pitch)); }
 
 
     private:

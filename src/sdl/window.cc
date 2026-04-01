@@ -17,8 +17,7 @@ window::get_size() const noexcept -> std::expected<sdl::size, kei::error>
 
 
 auto
-window::get_size_in_pixels() const noexcept
-    -> std::expected<sdl::size, kei::error>
+window::get_size_in_pixels() const noexcept -> std::expected<sdl::size, kei::error>
 {
     sdl::size size;
 

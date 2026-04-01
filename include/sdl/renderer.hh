@@ -1,4 +1,6 @@
 #pragma once
+#include <expected>
+
 #include <SDL3/SDL_render.h>
 
 #include "error.hh"
@@ -18,7 +20,12 @@ namespace kei::sdl
 
         auto render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
                             const sdl::frect                          *srcrect,
-                            const sdl::frect *dstrect) noexcept
-            -> std::optional<error>;
+                            const sdl::frect *dstrect) noexcept -> std::optional<error>;
+
+
+        [[nodiscard]]
+        auto create_texture(SDL_PixelFormat   pixel_fmt,
+                            SDL_TextureAccess access,
+                            sdl::fsize        size) noexcept -> std::expected<SDL_Texture *, error>;
     };
 }

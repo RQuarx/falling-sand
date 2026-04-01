@@ -13,8 +13,7 @@ namespace
 {
     [[nodiscard]]
     auto
-    get_time(const std::chrono::time_point<std::chrono::system_clock> &now)
-        -> std::string
+    get_time(const std::chrono::time_point<std::chrono::system_clock> &now) -> std::string
     {
         using std::chrono::duration;
         using ms = std::chrono::milliseconds;
@@ -26,18 +25,14 @@ namespace
         m    minutes { std::chrono::duration_cast<m>(dura) % 60 };
         s    seconds { std::chrono::duration_cast<s>(dura) % 60 };
 
-        return std::format("{:02}:{:02}.{:03}", minutes.count(),
-                           seconds.count(), millis.count());
+        return std::format("{:02}:{:02}.{:03}", minutes.count(), seconds.count(), millis.count());
     }
 
 
     constexpr std::array<std::string_view, 6> LABELS {
-        "\033[38;2;156;163;175mtrace\033[0m",
-        "\033[38;2;59;130;246mdebug\033[0m",
-        "\033[38;2;34;211;238minfo\033[0m ",
-        "\033[38;2;250;204;21mwarn\033[0m ",
-        "\033[38;2;239;68;68merror\033[0m",
-        "\033[38;2;192;38;211mfatal\033[0m",
+        "\033[38;2;156;163;175mtrace\033[0m", "\033[38;2;59;130;246mdebug\033[0m",
+        "\033[38;2;34;211;238minfo\033[0m ",  "\033[38;2;250;204;21mwarn\033[0m ",
+        "\033[38;2;239;68;68merror\033[0m",   "\033[38;2;192;38;211mfatal\033[0m",
     };
 
 
@@ -66,8 +61,7 @@ namespace
 
 logger::logger(log_level threshold_level) noexcept
     : m_threshold { threshold_level },
-      m_worker { [this](std::stop_token st)
-                 { mf_process_queue(std::move(st)); } }
+      m_worker { [this](std::stop_token st) { mf_process_queue(std::move(st)); } }
 {
 }
 
@@ -80,13 +74,9 @@ logger::~logger()
 
 
 auto
-logger::operator[](log_level            level,
-                   std::string_view     domain,
-                   std::source_location source) noexcept -> log_entry
-{
-    return log_entry { level < m_threshold ? nullptr : this, level, domain,
-                       source };
-}
+logger::operator[](log_level level, std::string_view domain, std::source_location source) noexcept
+    -> log_entry
+{ return log_entry { level < m_threshold ? nullptr : this, level, domain, source }; }
 
 
 void
@@ -96,9 +86,8 @@ logger::mf_process_queue(std::stop_token stop_token)
     {
         std::unique_lock lock { m_mutex };
 
-        m_cv.wait(
-            lock, [&] -> bool
-            { return stop_token.stop_requested() || !m_log_queue.empty(); });
+        m_cv.wait(lock,
+                  [&] -> bool { return stop_token.stop_requested() || !m_log_queue.empty(); });
 
         while (!m_log_queue.empty())
         {
@@ -109,9 +98,8 @@ logger::mf_process_queue(std::stop_token stop_token)
 
             const std::string time_str { get_time(obj.time) };
 
-            std::string formatted_console { format_log(
-                obj.level, time_str, obj.domain, obj.message,
-                obj.source.file_name(), obj.source.line()) };
+            std::string formatted_console { format_log(obj.level, time_str, obj.domain, obj.message,
+                                                       obj.source.file_name(), obj.source.line()) };
 
             std::clog << formatted_console << '\n';
 

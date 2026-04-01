@@ -39,8 +39,7 @@ namespace kei
         [[nodiscard]]
         auto operator[](log_level            level,
                         std::string_view     domain,
-                        std::source_location source
-                        = std::source_location::current()) noexcept
+                        std::source_location source = std::source_location::current()) noexcept
             -> log_entry;
 
     private:

@@ -11,11 +11,8 @@ namespace kei::sdl
 {
     struct window final : public resource<SDL_Window, SDL_DestroyWindow>
     {
+        [[nodiscard]] auto get_size() const noexcept -> std::expected<sdl::size, class error>;
         [[nodiscard]]
-        auto get_size_in_pixels() const noexcept
-            -> std::expected<sdl::size, class error>;
-
-        [[nodiscard]]
-        auto get_size() const noexcept -> std::expected<sdl::size, class error>;
+        auto get_size_in_pixels() const noexcept -> std::expected<sdl::size, class error>;
     };
 }

@@ -29,9 +29,11 @@ namespace kei::views
 
                 auto operator*() const -> value_type;
                 auto operator++() -> iterator &;
-                void operator++(int) { ++(*this); }
+                void
+                operator++(int)
+                { ++(*this); }
                 auto operator==(const iterator &other) const -> bool;
-                auto operator!=(const iterator& other) const -> bool;
+                auto operator!=(const iterator &other) const -> bool;
             };
 
             sdl::point a, b;

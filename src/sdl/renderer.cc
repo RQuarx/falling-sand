@@ -29,10 +29,21 @@ renderer::set_draw_color(sdl::color color) noexcept -> std::optional<error>
 auto
 renderer::render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
                          const sdl::frect                          *srcrect,
-                         const sdl::frect *dstrect) noexcept
-    -> std::optional<error>
+                         const sdl::frect *dstrect) noexcept -> std::optional<error>
 {
     if (!SDL_RenderTexture(get(), texture.get(), srcrect, dstrect))
         return sdl::error_builder["sdl::renderer"]();
     return std::nullopt;
+}
+
+
+auto
+renderer::create_texture(SDL_PixelFormat   pixel_fmt,
+                         SDL_TextureAccess access,
+                         sdl::fsize        size) noexcept -> std::expected<SDL_Texture *, error>
+{
+    if (auto *t { SDL_CreateTexture(get(), pixel_fmt, access, size.w, size.h) }; t == nullptr)
+        return std::unexpected { sdl::error_builder["sdl::renderer"]() };
+    else /* NOLINT */
+        return t;
 }

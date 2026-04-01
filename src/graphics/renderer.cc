@@ -1,37 +1,44 @@
+#include <numeric>
+
+#include "core/elements.hh"
 #include "graphics/renderer.hh"
-#include "logger.hh"
-#include "simulation/board.hh"
-#include "util.hh"
+#include "ui/cursor.hh"
 
 using kei::gfx::renderer;
 
 namespace kei
 {
-    static sdl::size max_size;
-
-
+    [[nodiscard]]
     static auto
-    get_max_board_rect(sdl::size board_size) noexcept -> sdl::frect
+    get_aspect_ratio(int a, int b) -> std::pair<float, float>
     {
-        auto aspect_ratio { util::get_aspect_ratio(board_size.w,
-                                                   board_size.h) };
+        float gcd { static_cast<float>(std::gcd(a, b)) };
+        return { a / gcd, b / gcd };
+    }
 
+
+    [[nodiscard]]
+    static auto
+    calculate_grid_rect(sdl::size window_size, sdl::size grid_size) -> sdl::frect
+    {
+        auto       aspect_ratio { get_aspect_ratio(grid_size.w, grid_size.h) };
         sdl::frect final_rect;
 
-        if (max_size.w * aspect_ratio.second <= max_size.h * aspect_ratio.first)
+        if (window_size.w * aspect_ratio.second <= window_size.h * aspect_ratio.first)
         {
-            final_rect.w = max_size.w;
-            final_rect.h
-                = max_size.w * aspect_ratio.second / aspect_ratio.first;
+            final_rect.w = window_size.w;
+            final_rect.h = window_size.w * aspect_ratio.second / aspect_ratio.first;
         }
         else
         {
-            final_rect.h = max_size.h;
-            final_rect.w
-                = max_size.h * aspect_ratio.first / aspect_ratio.second;
+            final_rect.h = window_size.h;
+            final_rect.w = window_size.h * aspect_ratio.first / aspect_ratio.second;
         }
 
-        sdl::point center { max_size.w / 2, max_size.h / 2 };
+        sdl::point center {
+            .x = window_size.w / 2,
+            .y = window_size.h / 2,
+        };
 
         final_rect.x = center.x - (final_rect.w / 2);
         final_rect.y = center.y - (final_rect.h / 2);
@@ -40,97 +47,113 @@ namespace kei
     }
 
 
+    [[nodiscard]]
     static auto
-    get_cell_size(sdl::frect max_board_rect, sdl::size board_size) noexcept
-        -> float
+    calculate_cell_size(sdl::frect grid_rect, sdl::size grid_size) noexcept -> float
+    { return std::min(grid_rect.w / grid_size.w, grid_rect.h / grid_size.h); }
+
+
+    [[nodiscard]]
+    static constexpr auto
+    operator!=(const sdl::fsize a, const sdl::size b) noexcept -> bool
+    { return a.w != b.w || a.h != b.h; }
+
+
+    [[nodiscard]]
+    static constexpr auto
+    get_contrast_color(const sdl::color &c) -> sdl::color
     {
-        return std::min(max_board_rect.w / board_size.w,
-                        max_board_rect.h / board_size.h);
+        float brightness { (0.2126F * c.r) + (0.7152F * c.g) + (0.0722F * c.b) };
+
+        if (brightness > 128.0F) return 0xffffff_rgb;
+        return 0x000000_rgb;
     }
 }
 
 
 auto
-renderer::mf_recalculate(context &ctx, sdl::size board_size)
-    -> std::optional<class error>
-{
-    m_board_rect = get_max_board_rect(board_size);
-    m_cell_size  = kei::get_cell_size(m_board_rect, board_size);
-
-    if (auto size { m_board_texture.size() }; !size)
-        return size.error();
-    else if (size->w != board_size.w || size->h != board_size.h) /* NOLINT */
-    {
-        m_board_texture.reset(SDL_CreateTexture(
-            ctx.get_render().get(), SDL_PIXELFORMAT_RGBA8888,
-            SDL_TEXTUREACCESS_STREAMING, board_size.w, board_size.h));
-
-        if (auto e { m_board_texture.set_scale_mode(SDL_SCALEMODE_NEAREST) })
-            return e;
-    }
-
-    return std::nullopt;
-}
-
-
-auto
-renderer::get_board_rect() const noexcept -> sdl::frect
-{
-    return m_board_rect;
-}
+renderer::get_grid_rect() const noexcept -> sdl::frect
+{ return m_grid_rect; }
 
 
 auto
 renderer::get_cell_size() const noexcept -> float
+{ return m_cell_size; }
+
+
+auto
+renderer::signal_on_size_changed() noexcept
+    -> sig::signal_connect<decltype(m_signal_on_size_changed)>
+{ return sig::signal_connect { m_signal_on_size_changed }; }
+
+
+auto
+renderer::render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor)
+    -> std::optional<error>
 {
-    return m_cell_size;
+    sdl::renderer &renderer { ctx.render() };
+
+    if (auto current_window_size { ctx.window().get_size_in_pixels() })
+    {
+        if (*current_window_size != m_window_size)
+        {
+            m_window_size = *current_window_size;
+            if (auto e { mf_recalculate(renderer, grid.size()) }) return e;
+
+            m_signal_on_size_changed.emit(grid.size(), {
+                                                           .grid_rect = m_grid_rect,
+                                                           .cell_size = m_cell_size,
+                                                       });
+        }
+    }
+    else
+        return current_window_size.error();
+
+    if (auto pixels { m_grid_texture.lock(nullptr) })
+    {
+        const auto &cursor_border_points { cursor.get_points_to_render(renderer) };
+
+        for (int y { 0 }; y < grid.size().h; y++)
+            for (int x { 0 }; x < grid.size().w; x++)
+            {
+                sdl::color element_color {
+                    core::get_element_definition(grid[{ .x = x, .y = y }].element).color
+                };
+
+                pixels.value()[y][x] = element_color.to_rgba_uint();
+            }
+
+        for (const auto &point : cursor_border_points)
+            pixels.value()[point.y][point.x]
+                = get_contrast_color(core::get_element_definition(grid[point].element).color)
+                      .to_rgba_uint();
+    }
+    else
+        return pixels.error();
+
+    return ctx.render().render_texture(m_grid_texture, nullptr, &m_grid_rect);
 }
 
 
 auto
-renderer::render(context                                           &ctx,
-                 sdl::size                                          board_size,
-                 std::span<const std::reference_wrapper<sim::cell>> cells,
-                 const sim::cursor &cursor) -> std::optional<class error>
+renderer::mf_recalculate(sdl::renderer &renderer, sdl::size grid_size) -> std::optional<error>
 {
-    sdl::size window_size;
-    if (auto e { ctx.get_window().get_size_in_pixels() })
-        window_size = *e;
+    m_grid_rect = calculate_grid_rect(m_window_size, grid_size);
+    m_cell_size = calculate_cell_size(m_grid_rect, grid_size);
+
+    if (auto texture_size { m_grid_texture.size() };
+        texture_size.has_value() && *texture_size != grid_size)
+    {
+        if (auto e { renderer.create_texture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
+                                             *texture_size) })
+            m_grid_texture.reset(*e);
+        else
+            return e.error();
+
+        if (auto e { m_grid_texture.set_scale_mode(SDL_SCALEMODE_NEAREST) }) return e;
+    }
     else
-        return e.error();
+        return texture_size.error();
 
-    if (max_size != window_size)
-    {
-        max_size = window_size;
-        if (auto e { mf_recalculate(ctx, board_size) }) return e;
-    }
-
-    if (m_last_cursor_pos != cursor.pos || m_last_cursor_size != cursor.size)
-    {
-        m_cursor_borders.clear();
-        cursor.get_border_indices(board_size, m_cursor_borders);
-        m_last_cursor_pos  = cursor.pos;
-        m_last_cursor_size = cursor.size;
-    }
-
-    {
-        auto pixels { m_board_texture.lock(nullptr) };
-
-        if (!pixels) return pixels.error();
-
-
-        for (int y { 0 }; y < board_size.h; y++)
-            for (int x { 0 }; x < board_size.w; x++)
-                pixels.value()[y][x] = 0;
-
-        for (const auto &cell : cells)
-            pixels.value()[cell.get().pos.y][cell.get().pos.x]
-                = cell.get().color.to_rgba_uint();
-
-        for (const auto &index : m_cursor_borders)
-            pixels.value()[index.y][index.x] = 0xffffffff;
-    }
-
-    return ctx.get_render().render_texture(m_board_texture, nullptr,
-                                           &m_board_rect);
+    return std::nullopt;
 }

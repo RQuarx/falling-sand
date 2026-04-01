@@ -6,8 +6,8 @@ src += graphics_src
 subdir('sdl')
 src += sdl_src
 
-subdir('simulation')
-src += simulation_src
+subdir('core')
+src += core_src
 
 
 subdir('views')

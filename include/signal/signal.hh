@@ -34,9 +34,7 @@ namespace kei::sig
 
         auto
         operator()(Ts &&...params) const -> T
-        {
-            return m_slot(std::forward<Ts>(params)...);
-        }
+        { return m_slot(std::forward<Ts>(params)...); }
 
 
         /** @brief disconnects the connection from the signal */
@@ -59,8 +57,7 @@ namespace kei::sig
 
 
         auto
-        set_iterator(typename container_type::iterator iter) noexcept
-            -> connection &
+        set_iterator(typename container_type::iterator iter) noexcept -> connection &
         {
             m_iter = iter;
             return *this;
@@ -68,8 +65,7 @@ namespace kei::sig
     };
 
 
-    template <typename Iterator, typename T, typename... Ts>
-    class slot_iterator_base
+    template <typename Iterator, typename T, typename... Ts> class slot_iterator_base
     {
     public:
         using connection    = connection<T, Ts...>;
@@ -90,9 +86,7 @@ namespace kei::sig
 
         auto
         operator++() noexcept -> slot_iterator_base &
-        {
-            return ++m_current, *this;
-        }
+        { return ++m_current, *this; }
 
 
         auto
@@ -106,23 +100,17 @@ namespace kei::sig
 
         auto
         operator!=(const slot_iterator_base &other) const noexcept
-        {
-            return m_current != other.m_current;
-        }
+        { return m_current != other.m_current; }
 
 
         auto
         operator==(const slot_iterator_base &other) const noexcept
-        {
-            return m_current == other.m_current;
-        }
+        { return m_current == other.m_current; }
 
 
         auto
         operator*() const -> slot_type
-        {
-            return *m_current;
-        }
+        { return *m_current; }
 
 
     private:
@@ -132,15 +120,11 @@ namespace kei::sig
 
     template <typename T, typename... Ts>
     using slot_iterator
-        = slot_iterator_base<typename std::list<connection<T, Ts...>>::iterator,
-                             T,
-                             Ts...>;
+        = slot_iterator_base<typename std::list<connection<T, Ts...>>::iterator, T, Ts...>;
 
     template <typename T, typename... Ts>
-    using const_slot_iterator = slot_iterator_base<
-        typename std::list<connection<T, Ts...>>::const_iterator,
-        T,
-        Ts...>;
+    using const_slot_iterator
+        = slot_iterator_base<typename std::list<connection<T, Ts...>>::const_iterator, T, Ts...>;
 
 
     /**
@@ -154,10 +138,9 @@ namespace kei::sig
     template <typename T, typename... Ts> class signal
     {
     public:
-        using slot_type = std::function<T(Ts...)>;
-        using emit_result
-            = std::conditional_t<std::is_same_v<T, void>, void, std::vector<T>>;
-        using connection = connection<T, Ts...>;
+        using slot_type   = std::function<T(Ts...)>;
+        using emit_result = std::conditional_t<std::is_same_v<T, void>, void, std::vector<T>>;
+        using connection  = connection<T, Ts...>;
 
 
         signal() = default;
@@ -200,8 +183,7 @@ namespace kei::sig
                     return_values.reserve(m_slots.size());
 
                     for (auto &slot : m_slots)
-                        return_values.emplace_back(
-                            slot(std::forward<Ts>(params)...));
+                        return_values.emplace_back(slot(std::forward<Ts>(params)...));
 
                     return return_values;
                 }
@@ -221,57 +203,43 @@ namespace kei::sig
          */
         auto
         set_collect_return_values(bool collect) noexcept -> signal &
-        {
-            return m_collect_retvals.exchange(collect), *this;
-        }
+        { return m_collect_retvals.exchange(collect), *this; }
 
 
         [[nodiscard]]
         auto
         begin() noexcept -> slot_iterator<T, Ts...>
-        {
-            return { m_slots.begin(), m_slots.end() };
-        }
+        { return { m_slots.begin(), m_slots.end() }; }
 
 
         [[nodiscard]]
         auto
         end() noexcept -> slot_iterator<T, Ts...>
-        {
-            return { m_slots.end(), m_slots.end() };
-        }
+        { return { m_slots.end(), m_slots.end() }; }
 
 
         [[nodiscard]]
         auto
         begin() const noexcept -> const_slot_iterator<T, Ts...>
-        {
-            return { m_slots.cbegin(), m_slots.cend() };
-        }
+        { return { m_slots.cbegin(), m_slots.cend() }; }
 
 
         [[nodiscard]]
         auto
         end() const noexcept -> const_slot_iterator<T, Ts...>
-        {
-            return { m_slots.cend(), m_slots.cend() };
-        }
+        { return { m_slots.cend(), m_slots.cend() }; }
 
 
         [[nodiscard]]
         auto
         cbegin() const noexcept -> const_slot_iterator<T, Ts...>
-        {
-            return { m_slots.cbegin(), m_slots.cend() };
-        }
+        { return { m_slots.cbegin(), m_slots.cend() }; }
 
 
         [[nodiscard]]
         auto
         cend() const noexcept -> const_slot_iterator<T, Ts...>
-        {
-            return { m_slots.cend(), m_slots.cend() };
-        }
+        { return { m_slots.cend(), m_slots.cend() }; }
 
     private:
         mutable std::mutex    m_mtx;
@@ -281,33 +249,26 @@ namespace kei::sig
     };
 
 
-    template <typename Signal>
-    class signal_connect
+    template <typename Signal> class signal_connect
     {
         Signal &m_signal;
 
     public:
         using slot_type = typename Signal::slot_type;
 
-        explicit signal_connect(Signal &signal) noexcept : m_signal { signal }
-        {
-        }
+        explicit signal_connect(Signal &signal) noexcept : m_signal { signal } {}
 
 
         template <typename S>
         auto
         connect(S &&slot) noexcept -> Signal::connection &
             requires std::convertible_to<S, slot_type>
-        {
-            return m_signal.connect(std::forward<S>(slot));
-        }
+        { return m_signal.connect(std::forward<S>(slot)); }
 
         template <typename S>
         auto
         operator|(S &&slot) noexcept -> signal_connect &
             requires std::convertible_to<S, slot_type>
-        {
-            return connect(std::forward<S>(slot)), *this;
-        }
+        { return connect(std::forward<S>(slot)), *this; }
     };
 }

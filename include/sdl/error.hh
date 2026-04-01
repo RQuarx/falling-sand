@@ -12,13 +12,11 @@ namespace kei::sdl
                                    {
                                        if (msg.empty()) return SDL_GetError();
 
-                                       return std::format("{}: {}", msg,
-                                                          SDL_GetError());
+                                       return std::format("{}: {}", msg, SDL_GetError());
                                    } };
     }
 
 
-    inline constexpr kei::_impl::error_builder<
-        decltype(_impl::sdl_error_formatter)>
+    inline constexpr kei::_impl::error_builder<decltype(_impl::sdl_error_formatter)>
         error_builder {};
 }

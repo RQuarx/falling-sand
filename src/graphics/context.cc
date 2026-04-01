@@ -9,7 +9,6 @@ using kei::gfx::context;
 
 
 context::context(const char *title, int width, int height, int flags)
-    : m_last_frame_time { SDL_GetTicks() }, m_frame_count { 0 }
 {
     SDL_Window   *window { nullptr };
     SDL_Renderer *render { nullptr };
@@ -27,72 +26,35 @@ context::context(const char *title, int width, int height, int flags)
 
 
 auto
-context::get_window() noexcept -> decltype(m_window) &
-{
-    return m_window;
-}
+context::window() noexcept -> sdl::window &
+{ return m_window; }
 
 
 auto
-context::get_render() noexcept -> decltype(m_render) &
-{
-    return m_render;
-}
-
-
-auto
-context::get_fps() const noexcept -> std::uint32_t
-{
-    return m_fps;
-}
-
-
-auto
-context::get_dt() const noexcept -> float
-{
-    return m_dt;
-}
+context::render() noexcept -> sdl::renderer &
+{ return m_render; }
 
 
 auto
 context::signal_on_frame() noexcept
     -> sig::signal_connect<decltype(m_on_frame_signal)>
-{
-    return sig::signal_connect { m_on_frame_signal };
-}
+{ return sig::signal_connect { m_on_frame_signal }; }
 
 
 auto
-context::do_frame(std::size_t amount) -> std::optional<error>
+context::do_frame(sdl::color bg) -> std::optional<error>
 {
-    for (; amount > 0; amount--)
+    if (auto e { m_render.set_draw_color(bg) }) return e;
+    if (auto e { m_render.clear() }) return e;
+
+    try
     {
-        auto current_time { SDL_GetTicks() };
-        m_dt = (current_time - m_last_frame_time) / 1000.0F; /* seconds */
-        m_last_frame_time = current_time;
-
-        if (auto e { m_render.set_draw_color(0x000000_rgb) }) return e;
-        if (auto e { m_render.clear() }) return e;
-
-        try
-        {
-            m_on_frame_signal.emit(*this);
-        }
-        catch (const error &err)
-        {
-            return err;
-        }
-
-        if (auto e { m_render.present() }) return e;
-
-        m_frame_count++;
-
-        m_frame_count++;
-        if (m_frame_count % 60 == 0)
-        {
-            m_fps = static_cast<std::uint32_t>(1.0F / m_dt);
-        }
+        m_on_frame_signal.emit(*this);
+    }
+    catch (const error &err)
+    {
+        return err;
     }
 
-    return std::nullopt;
+    return m_render.present();
 }
