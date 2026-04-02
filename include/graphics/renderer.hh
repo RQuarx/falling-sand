@@ -28,8 +28,7 @@ namespace kei::gfx
             -> sig::signal_connect<decltype(m_signal_on_size_changed)>;
 
 
-        auto render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor)
-            -> std::optional<error>;
+        void render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor);
 
     private:
         sdl::size    m_window_size;
@@ -39,6 +38,6 @@ namespace kei::gfx
         float      m_cell_size;
 
 
-        auto mf_recalculate(sdl::renderer &renderer, sdl::size grid_size) -> std::optional<error>;
+        void mf_recalculate(sdl::renderer &renderer, sdl::size grid_size);
     };
 }

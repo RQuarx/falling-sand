@@ -2,7 +2,6 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
-#include "error.hh"
 #include "sdl/renderer.hh"
 #include "sdl/window.hh"
 #include "signal/signal.hh"
@@ -19,7 +18,7 @@ namespace kei::gfx
         [[nodiscard]] auto window() noexcept -> sdl::window &;
         [[nodiscard]] auto render() noexcept -> sdl::renderer &;
 
-        auto do_frame(sdl::color bg) -> std::optional<error>;
+        void do_frame(sdl::color bg);
 
 
         [[nodiscard]]

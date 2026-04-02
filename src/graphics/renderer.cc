@@ -87,73 +87,53 @@ renderer::signal_on_size_changed() noexcept
 { return sig::signal_connect { m_signal_on_size_changed }; }
 
 
-auto
+void
 renderer::render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor)
-    -> std::optional<error>
 {
     sdl::renderer &renderer { ctx.render() };
 
-    if (auto current_window_size { ctx.window().get_size_in_pixels() })
+    if (sdl::size window_size { ctx.window().get_size_in_pixels() }; window_size != m_window_size)
     {
-        if (*current_window_size != m_window_size)
-        {
-            m_window_size = *current_window_size;
-            if (auto e { mf_recalculate(renderer, grid.size()) }) return e;
+        m_window_size = window_size;
+        mf_recalculate(renderer, grid.size());
 
-            m_signal_on_size_changed.emit(grid.size(), {
-                                                           .grid_rect = m_grid_rect,
-                                                           .cell_size = m_cell_size,
-                                                       });
-        }
+        m_signal_on_size_changed.emit(grid.size(), {
+                                                       .grid_rect = m_grid_rect,
+                                                       .cell_size = m_cell_size,
+                                                   });
     }
-    else
-        return current_window_size.error();
 
-    if (auto pixels { m_grid_texture.lock(nullptr) })
     {
+        sdl::texture_pixel pixels { m_grid_texture.lock(nullptr) };
+
         const auto &cursor_border_points { cursor.get_points_to_render(renderer) };
 
         for (int y { 0 }; y < grid.size().h; y++)
             for (int x { 0 }; x < grid.size().w; x++)
-            {
-                sdl::color element_color {
-                    core::get_element_definition(grid[{ .x = x, .y = y }].element).color
-                };
-
-                pixels.value()[y][x] = element_color.to_rgba_uint();
-            }
+                pixels.set_color_at(
+                    { .x = x, .y = y },
+                    core::get_element_definition(grid[{ .x = x, .y = y }].element).color);
 
         for (const auto &point : cursor_border_points)
-            pixels.value()[point.y][point.x]
-                = get_contrast_color(core::get_element_definition(grid[point].element).color)
-                      .to_rgba_uint();
+            pixels.set_color_at(
+                point, get_contrast_color(core::get_element_definition(grid[point].element).color));
     }
-    else
-        return pixels.error();
 
-    return ctx.render().render_texture(m_grid_texture, nullptr, &m_grid_rect);
+    ctx.render().render_texture(m_grid_texture, nullptr, &m_grid_rect);
 }
 
 
-auto
-renderer::mf_recalculate(sdl::renderer &renderer, sdl::size grid_size) -> std::optional<error>
+void
+renderer::mf_recalculate(sdl::renderer &renderer, sdl::size grid_size)
 {
     m_grid_rect = calculate_grid_rect(m_window_size, grid_size);
     m_cell_size = calculate_cell_size(m_grid_rect, grid_size);
 
-    if (auto texture_size { m_grid_texture.size() };
-        texture_size.has_value() && *texture_size != grid_size)
+    if (sdl::fsize texture_size { m_grid_texture.size() }; texture_size != grid_size)
     {
-        if (auto e { renderer.create_texture(SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING,
-                                             *texture_size) })
-            m_grid_texture.reset(*e);
-        else
-            return e.error();
+        m_grid_texture.reset(renderer.create_texture(SDL_PIXELFORMAT_RGBA8888,
+                                                     SDL_TEXTUREACCESS_STREAMING, texture_size));
 
-        if (auto e { m_grid_texture.set_scale_mode(SDL_SCALEMODE_NEAREST) }) return e;
+        m_grid_texture.set_scale_mode(SDL_SCALEMODE_NEAREST);
     }
-    else
-        return texture_size.error();
-
-    return std::nullopt;
 }

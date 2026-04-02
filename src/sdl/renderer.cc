@@ -1,49 +1,56 @@
+#include "sdl/error.hh"
 #include "sdl/renderer.hh"
 
 using kei::sdl::renderer;
 
 
-auto
-renderer::clear() noexcept -> std::optional<error>
+void
+renderer::clear()
 {
-    if (!SDL_RenderClear(get())) return sdl::error_builder["sdl::renderer"]();
-    return std::nullopt;
+    if (!SDL_RenderClear(get())) throw sdl::error_builder["sdl::renderer"]();
 }
 
 
-auto
-renderer::present() noexcept -> std::optional<error>
+void
+renderer::present()
 {
-    if (!SDL_RenderPresent(get())) return sdl::error_builder["sdl::renderer"]();
-    return std::nullopt;
+    if (!SDL_RenderPresent(get())) throw sdl::error_builder["sdl::renderer"]();
 }
 
-auto
-renderer::set_draw_color(sdl::color color) noexcept -> std::optional<error>
+void
+renderer::set_draw_color(sdl::color color)
 {
     if (!SDL_SetRenderDrawColor(get(), color.r, color.g, color.b, color.a))
-        return sdl::error_builder["sdl::renderer"]();
-    return std::nullopt;
+        throw sdl::error_builder["sdl::renderer"]();
 }
 
-auto
+void
 renderer::render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
                          const sdl::frect                          *srcrect,
-                         const sdl::frect *dstrect) noexcept -> std::optional<error>
+                         const sdl::frect                          *dstrect)
 {
     if (!SDL_RenderTexture(get(), texture.get(), srcrect, dstrect))
-        return sdl::error_builder["sdl::renderer"]();
-    return std::nullopt;
+        throw sdl::error_builder["sdl::renderer"]();
 }
 
 
 auto
 renderer::create_texture(SDL_PixelFormat   pixel_fmt,
                          SDL_TextureAccess access,
-                         sdl::fsize        size) noexcept -> std::expected<SDL_Texture *, error>
+                         sdl::fsize        size) -> SDL_Texture *
 {
     if (auto *t { SDL_CreateTexture(get(), pixel_fmt, access, size.w, size.h) }; t == nullptr)
-        return std::unexpected { sdl::error_builder["sdl::renderer"]() };
+        throw sdl::error_builder["sdl::renderer"]();
     else /* NOLINT */
         return t;
+}
+
+
+auto
+renderer::render_position_from_window(sdl::fpoint window_point) -> sdl::fpoint
+{
+    sdl::fpoint point;
+    if (!SDL_RenderCoordinatesFromWindow(get(), window_point.x, window_point.y, &point.x, &point.y))
+        throw sdl::error_builder["sdl::renderer"]();
+    return point;
 }

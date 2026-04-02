@@ -41,20 +41,13 @@ context::signal_on_frame() noexcept
 { return sig::signal_connect { m_on_frame_signal }; }
 
 
-auto
-context::do_frame(sdl::color bg) -> std::optional<error>
+void
+context::do_frame(sdl::color bg)
 {
-    if (auto e { m_render.set_draw_color(bg) }) return e;
-    if (auto e { m_render.clear() }) return e;
+    m_render.set_draw_color(bg);
+    m_render.clear();
 
-    try
-    {
-        m_on_frame_signal.emit(*this);
-    }
-    catch (const error &err)
-    {
-        return err;
-    }
+    m_on_frame_signal.emit(*this);
 
-    return m_render.present();
+    m_render.present();
 }

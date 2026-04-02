@@ -3,6 +3,9 @@ src = files('game.cc', 'logger.cc', 'main.cc')
 subdir('graphics')
 src += graphics_src
 
+subdir('input')
+src += input_src
+
 subdir('sdl')
 src += sdl_src
 

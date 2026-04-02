@@ -1,9 +1,6 @@
 #pragma once
-#include <expected>
-
 #include <SDL3/SDL_render.h>
 
-#include "error.hh"
 #include "sdl/color.hh"
 #include "sdl/resource.hh"
 #include "sdl/typedefs.hh"
@@ -13,19 +10,20 @@ namespace kei::sdl
 {
     struct renderer final : public resource<SDL_Renderer, SDL_DestroyRenderer>
     {
-        auto clear() noexcept -> std::optional<error>;
-        auto present() noexcept -> std::optional<error>;
+        void clear();
+        void present();
 
-        auto set_draw_color(sdl::color color) noexcept -> std::optional<error>;
+        void set_draw_color(sdl::color color);
 
-        auto render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
+        void render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
                             const sdl::frect                          *srcrect,
-                            const sdl::frect *dstrect) noexcept -> std::optional<error>;
+                            const sdl::frect                          *dstrect);
 
 
         [[nodiscard]]
-        auto create_texture(SDL_PixelFormat   pixel_fmt,
-                            SDL_TextureAccess access,
-                            sdl::fsize        size) noexcept -> std::expected<SDL_Texture *, error>;
+        auto create_texture(SDL_PixelFormat pixel_fmt, SDL_TextureAccess access, sdl::fsize size)
+            -> SDL_Texture *;
+
+        [[nodiscard]] auto render_position_from_window(sdl::fpoint window_point) -> sdl::fpoint;
     };
 }

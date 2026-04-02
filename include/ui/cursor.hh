@@ -22,6 +22,8 @@ namespace kei::ui
         };
 
     public:
+        cursor() noexcept;
+
         void connect_signals(sdl::event_handler &event_handler, gfx::renderer &renderer);
 
 
@@ -34,7 +36,7 @@ namespace kei::ui
         struct mouse_position
         {
             std::optional<sdl::fpoint> previous_position;
-            sdl::fpoint                position;
+            sdl::fpoint                position { .x = 0, .y = 0 };
         } m_mouse;
 
         struct grid_data
@@ -43,7 +45,7 @@ namespace kei::ui
             gfx::grid_layout layout;
         } m_grid;
 
-        sdl::size m_size;
+        sdl::size m_size { .w = 10, .h = 10 };
 
         std::vector<sdl::point> m_draw_points;
         std::vector<sdl::point> m_border_points;

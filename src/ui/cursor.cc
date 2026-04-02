@@ -80,11 +80,7 @@ auto
 cursor::mf_mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
     -> sdl::point
 {
-    sdl::fpoint mouse_pos;
-    if (!SDL_RenderCoordinatesFromWindow(renderer.get(), position.x, position.y, &mouse_pos.x,
-                                         &mouse_pos.y))
-        return { .x = -1, .y = -1 };
-
+    sdl::fpoint mouse_pos { renderer.render_position_from_window(position) };
     sdl::fpoint relative_pos {
         .x
         = std::clamp(mouse_pos.x - m_grid.layout.grid_rect.x, 0.F, m_grid.layout.grid_rect.w - 1),
