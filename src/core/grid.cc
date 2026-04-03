@@ -5,7 +5,10 @@
 using kei::core::grid;
 
 
-grid::grid() { set_size({ .w = 616, .h = 381 }); }
+grid::grid()
+{
+    set_size({ .w = 616, .h = 381 });
+}
 
 
 void

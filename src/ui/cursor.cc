@@ -48,21 +48,27 @@ cursor::get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::
 {
     m_border_points.clear();
     sdl::point position { mf_mouse_position_to_grid_position(renderer, m_mouse.position) };
+    sdl::fsize half_size { m_size.w / 2.F, m_size.h / 2.F };
 
     constexpr std::array dx { 1, -1, 0, 0 };
     constexpr std::array dy { 0, 0, 1, -1 };
 
     mf_for_each_cell_in_shape(
         position,
-        [&](int x, int y, auto)
+        [&](int x, int y, sdl::fpoint)
         {
+            sdl::fpoint normalized { .x = (x - position.x) / half_size.w,
+                                     .y = (y - position.y) / half_size.h };
+
+            if (!mf_is_inside_shape(normalized)) return;
+
             bool is_border { false };
 
             for (int i { 0 }; i < 4; i++)
             {
-                sdl::point  n { .x = x + dx[i], .y = y + dy[i] };
-                sdl::fpoint normalized { .x = (n.x - position.x) / (m_size.w / 2.F),
-                                         .y = (n.y - position.y) / (m_size.h / 2.F) };
+                sdl::point  neighbor { .x = x + dx[i], .y = y + dy[i] };
+                sdl::fpoint normalized { .x = (neighbor.x - position.x) / half_size.w,
+                                         .y = (neighbor.y - position.y) / half_size.h };
 
                 if (!mf_is_inside_shape(normalized))
                 {

@@ -66,7 +66,7 @@ namespace kei
     {
         float brightness { (0.2126F * c.r) + (0.7152F * c.g) + (0.0722F * c.b) };
 
-        if (brightness > 128.0F) return sdl::white;
+        if (brightness < 128.0F) return sdl::white;
         return sdl::black;
     }
 }
