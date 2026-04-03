@@ -32,7 +32,7 @@ namespace kei
 }
 
 
-game::game() noexcept : m_valid { true }, m_draw_element { core::elements::air.id }
+game::game() noexcept : m_valid { true }, m_draw_element { core::elements::sand.id }
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {

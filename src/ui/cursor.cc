@@ -14,7 +14,7 @@ cursor::connect_signals(sdl::event_handler &event_handler, gfx::renderer &render
     event_handler[SDL_EVENT_MOUSE_WHEEL] | sig::method(*this, &cursor::mf_on_mouse_wheel);
     event_handler[SDL_EVENT_KEY_DOWN] | sig::method(*this, &cursor::mf_on_key_down);
 
-    renderer.signal_on_size_changed() | sig::method(*this, &cursor::mf_on_grid_size_changed);
+    renderer.signal_on_size_changed() | sig::method(*this, &cursor::mf_on_grid_layout_changed);
 }
 
 
@@ -22,7 +22,7 @@ auto
 cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::point> &
 {
     m_draw_points.clear();
-    sdl::point current_position { mf_mouse_position_to_grid_position(renderer, m_mouse.position) };
+    sdl::point current_position { mouse_position_to_grid_position(renderer, m_mouse.position) };
 
     if (!m_mouse.previous_position.has_value())
     {
@@ -30,14 +30,12 @@ cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::po
         return m_draw_points;
     }
 
-    sdl::point previous_position { mf_mouse_position_to_grid_position(renderer,
-                                                                      *m_mouse.previous_position) };
+    sdl::point previous_position { mouse_position_to_grid_position(renderer,
+                                                                   *m_mouse.previous_position) };
 
-    static std::vector<bool> visited(static_cast<std::size_t>(m_grid.size.w * m_grid.size.h),
-                                     false);
-    std::ranges::fill(visited, false);
+    std::vector<bool> visited(static_cast<std::size_t>(m_grid.size.w * m_grid.size.h), false);
 
-    for (auto pos : views::bresenham(current_position, previous_position))
+    for (auto pos : views::bresenham(previous_position, current_position))
         mf_draw(pos, m_draw_points, &visited);
     return m_draw_points;
 }
@@ -47,21 +45,16 @@ auto
 cursor::get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::point> &
 {
     m_border_points.clear();
-    sdl::point position { mf_mouse_position_to_grid_position(renderer, m_mouse.position) };
-    sdl::fsize half_size { m_size.w / 2.F, m_size.h / 2.F };
+    sdl::point position { mouse_position_to_grid_position(renderer, m_mouse.position) };
+    sdl::fsize half_size { (m_size.w - 0.5F) / 2.F, (m_size.h - 0.5F) / 2.F };
 
     constexpr std::array dx { 1, -1, 0, 0 };
     constexpr std::array dy { 0, 0, 1, -1 };
 
     mf_for_each_cell_in_shape(
         position,
-        [&](int x, int y, sdl::fpoint)
+        [&](int x, int y, auto)
         {
-            sdl::fpoint normalized { .x = (x - position.x) / half_size.w,
-                                     .y = (y - position.y) / half_size.h };
-
-            if (!mf_is_inside_shape(normalized)) return;
-
             bool is_border { false };
 
             for (int i { 0 }; i < 4; i++)
@@ -85,7 +78,7 @@ cursor::get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::
 
 
 auto
-cursor::mf_mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
+cursor::mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
     -> sdl::point
 {
     sdl::fpoint mouse_pos { renderer.render_position_from_window(position) };
@@ -135,7 +128,7 @@ cursor::mf_draw(sdl::point               position,
         position,
         [&](int x, int y, auto)
         {
-            if (visited)
+            if (visited != nullptr)
             {
                 auto idx { static_cast<std::size_t>((y * m_grid.size.w) + x) };
                 if ((*visited)[idx]) return;
@@ -194,7 +187,7 @@ cursor::mf_on_key_down(const sdl::event &event) -> sdl::event_return
 
 
 void
-cursor::mf_on_grid_size_changed(sdl::size grid_size, gfx::grid_layout grid_layout)
+cursor::mf_on_grid_layout_changed(sdl::size grid_size, gfx::grid_layout grid_layout)
 {
     m_grid.size   = grid_size;
     m_grid.layout = grid_layout;

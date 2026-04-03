@@ -28,6 +28,10 @@ namespace kei::ui
         auto get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::point> &;
         auto get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::point> &;
 
+        [[nodiscard]]
+        auto mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
+            -> sdl::point;
+
     private:
         cursor_shape m_shape { cursor_shape::circle };
 
@@ -49,20 +53,11 @@ namespace kei::ui
         std::vector<sdl::point> m_border_points;
 
 
-        [[nodiscard]]
-        auto mf_mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
-            -> sdl::point;
-
-
         void
         mf_for_each_cell_in_shape(sdl::point position, auto &&fn) const
         {
-            const sdl::size half { .w = m_size.w / 2, .h = m_size.h / 2 };
-            const sdl::size inv_half {
-                .w = static_cast<int>(1.F / (half.w > 0 ? half.w : 1)),
-                .h = static_cast<int>(1.F / (half.h > 0 ? half.h : 1)),
-            };
-
+            const sdl::size half { .w = static_cast<int>(m_size.w - 0.5F) / 2,
+                                   .h = static_cast<int>(m_size.h - 0.5F) / 2 };
 
             for (int y { position.y - half.h }; y <= position.y + half.h; y++)
                 for (int x { position.x - half.w }; x <= position.x + half.w; x++)
@@ -70,8 +65,8 @@ namespace kei::ui
                     if (x < 0 || y < 0 || x >= m_grid.size.w || y >= m_grid.size.h) continue;
 
                     sdl::fpoint normalized {
-                        .x = static_cast<float>((x - position.x) * inv_half.w),
-                        .y = static_cast<float>((y - position.y) * inv_half.h),
+                        .x = (x - position.x) / (m_size.w / 2.F),
+                        .y = (y - position.y) / (m_size.h / 2.F),
                     };
 
                     if (!mf_is_inside_shape(normalized)) continue;
@@ -92,6 +87,6 @@ namespace kei::ui
         auto mf_on_mouse_wheel(const sdl::event &event) -> sdl::event_return;
         auto mf_on_key_down(const sdl::event &event) -> sdl::event_return;
 
-        void mf_on_grid_size_changed(sdl::size grid_size, gfx::grid_layout grid_layout);
+        void mf_on_grid_layout_changed(sdl::size grid_size, gfx::grid_layout grid_layout);
     };
 }
