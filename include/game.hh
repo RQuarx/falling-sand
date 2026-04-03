@@ -12,6 +12,7 @@ namespace kei
     {
     public:
         game() noexcept;
+        ~game();
 
 
         [[nodiscard]] auto run() noexcept -> int;
@@ -30,5 +31,8 @@ namespace kei
         ui::cursor       m_cursor;
 
         int m_draw_element;
+
+
+        void mf_on_frame(gfx::context &ctx);
     };
 }

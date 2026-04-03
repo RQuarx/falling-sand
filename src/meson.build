@@ -12,6 +12,8 @@ src += sdl_src
 subdir('core')
 src += core_src
 
+subdir('ui')
+src += ui_src
 
 subdir('views')
 src += views_src

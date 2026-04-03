@@ -15,6 +15,8 @@ namespace kei::core
         using const_reverse_iterator = std::vector<cell>::const_reverse_iterator;
 
 
+        grid();
+
         void set_size(sdl::size new_size);
         void clear();
 

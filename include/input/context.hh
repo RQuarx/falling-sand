@@ -39,52 +39,47 @@ namespace kei::input
 
         template <typename Fn> class is_x_states
         {
-            template <typename... T> class compare
+            template <typename... Ts> class compare
             {
             public:
-                compare(const context &ctx, Fn &&fn, std::tuple<T...> &&buttons)
-                    : m_ctx { ctx }, m_fn { std::move(fn) }, m_buttons { std::move(buttons) }
+                compare(const context &ctx, Fn fn, std::tuple<Ts...> buttons)
+                    : m_ctx { ctx }, m_fn { fn }, m_buttons { std::move(buttons) }
                 {
                 }
 
 
                 [[nodiscard]]
                 auto
-                operator()(auto &&...vals) -> bool
+                operator()(auto &&...states) -> bool
                 {
                     return std::apply(
-                        [&](auto &&...buttons)
-                        {
-                            return ((
-                                        [&]
-                                        {
-                                            auto state { std::invoke(m_fn, m_ctx, buttons) };
-                                            return ((state == vals) || ...);
-                                        }())
-                                    && ...);
-                        },
+                        [&](auto... buttons)
+                        { return ((mf_is_button_in_states(buttons, states...)) || ...); },
                         m_buttons);
                 }
 
 
             private:
-                const context   &m_ctx;
-                Fn               m_fn;
-                std::tuple<T...> m_buttons;
+                const context    &m_ctx;
+                Fn                m_fn;
+                std::tuple<Ts...> m_buttons;
+
+
+                template <typename Button, typename... States>
+                auto
+                mf_is_button_in_states(Button button, States... states) const -> bool
+                { return ((std::invoke(m_fn, m_ctx, button) == states) || ...); }
             };
 
         public:
-            is_x_states(const context &ctx, Fn fn) : m_ctx { ctx }, m_fn { std::move(fn) } {}
+            is_x_states(const context &ctx, Fn fn) : m_ctx { ctx }, m_fn { fn } {}
 
 
-            template <typename... T>
+            template <typename... Ts>
             [[nodiscard]]
             auto
-            operator[](T &&...buttons) -> compare<T...>
-            {
-                return compare { m_ctx, std::move(m_fn),
-                                 std::make_tuple(std::forward<T>(buttons)...) };
-            }
+            operator[](Ts &&...buttons) -> compare<Ts...>
+            { return compare { m_ctx, m_fn, std::make_tuple(std::forward<Ts>(buttons)...) }; }
 
         private:
             const context &m_ctx;
@@ -92,6 +87,8 @@ namespace kei::input
         };
 
     public:
+        context();
+
         void connect_signals(sdl::event_handler &event_handler, sdl::renderer &renderer);
         void on_frame_begin();
 

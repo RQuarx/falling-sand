@@ -1,0 +1,1 @@
+ui_src = files('cursor.cc')

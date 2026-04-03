@@ -22,8 +22,6 @@ namespace kei::ui
         };
 
     public:
-        cursor() noexcept;
-
         void connect_signals(sdl::event_handler &event_handler, gfx::renderer &renderer);
 
 

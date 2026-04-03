@@ -133,6 +133,10 @@ namespace kei::sdl
             return color { read_byte(0), read_byte(2), read_byte(4), read_byte(6) };
         }
     };
+
+
+    inline constexpr color white { 255, 255, 255 };
+    inline constexpr color black { 0, 0, 0 };
 }
 
 

@@ -5,6 +5,9 @@
 using kei::core::grid;
 
 
+grid::grid() { set_size({ .w = 616, .h = 381 }); }
+
+
 void
 grid::set_size(sdl::size new_size)
 {
@@ -16,9 +19,7 @@ grid::set_size(sdl::size new_size)
 
 void
 grid::clear()
-{
-    m_cells.clear();
-}
+{ m_cells.clear(); }
 
 
 auto
@@ -38,85 +39,61 @@ grid::operator[](sdl::point p) const -> const cell &
 
 auto
 grid::begin() noexcept -> iterator
-{
-    return m_cells.begin();
-}
+{ return m_cells.begin(); }
 
 
 auto
 grid::end() noexcept -> iterator
-{
-    return m_cells.end();
-}
+{ return m_cells.end(); }
 
 
 auto
 grid::begin() const noexcept -> const_iterator
-{
-    return m_cells.begin();
-}
+{ return m_cells.begin(); }
 
 
 auto
 grid::end() const noexcept -> const_iterator
-{
-    return m_cells.end();
-}
+{ return m_cells.end(); }
 
 
 auto
 grid::cbegin() const noexcept -> const_iterator
-{
-    return m_cells.cbegin();
-}
+{ return m_cells.cbegin(); }
 
 
 auto
 grid::cend() const noexcept -> const_iterator
-{
-    return m_cells.cend();
-}
+{ return m_cells.cend(); }
 
 
 auto
 grid::rbegin() noexcept -> reverse_iterator
-{
-    return m_cells.rbegin();
-}
+{ return m_cells.rbegin(); }
 
 
 auto
 grid::rend() noexcept -> reverse_iterator
-{
-    return m_cells.rend();
-}
+{ return m_cells.rend(); }
 
 
 auto
 grid::rbegin() const noexcept -> const_reverse_iterator
-{
-    return m_cells.rbegin();
-}
+{ return m_cells.rbegin(); }
 
 
 auto
 grid::rend() const noexcept -> const_reverse_iterator
-{
-    return m_cells.rend();
-}
+{ return m_cells.rend(); }
 
 
 auto
 grid::crbegin() const noexcept -> const_reverse_iterator
-{
-    return m_cells.crbegin();
-}
+{ return m_cells.crbegin(); }
 
 
 auto
 grid::crend() const noexcept -> const_reverse_iterator
-{
-    return m_cells.crend();
-}
+{ return m_cells.crend(); }
 
 

@@ -1,3 +1,4 @@
+#include <print>
 #include <utility>
 
 #include "input/context.hh"
@@ -6,6 +7,9 @@
 #include "signal/method.hh"
 
 using kei::input::context;
+
+
+context::context() { m_mouse_buttons.fill(button_state::up); }
 
 
 void
@@ -44,8 +48,7 @@ context::on_frame_begin()
         {
         case button_state::pressed:  state = button_state::down; break;
         case button_state::released: state = button_state::up; break;
-        case button_state::down:     [[fallthrough]];
-        case button_state::up:       break;
+        default:                     break;
         }
 }
 
@@ -160,6 +163,5 @@ context::is_button_states() const noexcept
 
 
 auto
-context::is_key_states() const noexcept
-    -> is_x_states<decltype(&context::get_key_state)>
+context::is_key_states() const noexcept -> is_x_states<decltype(&context::get_key_state)>
 { return { *this, &context::get_key_state }; }

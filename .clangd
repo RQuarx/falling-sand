@@ -23,6 +23,7 @@ Diagnostics:
             - readability-avoid-nested-conditional-operator
             - bugprone-narrowing-conversions
             - modernize-use-trailing-return-type
+            - modernize-use-designated-initializers
 
 Index:
     Background: Build

@@ -21,7 +21,7 @@ namespace kei::sdl
 
 
         [[nodiscard]]
-        auto create_texture(SDL_PixelFormat pixel_fmt, SDL_TextureAccess access, sdl::fsize size)
+        auto create_texture(SDL_PixelFormat pixel_fmt, SDL_TextureAccess access, sdl::size size)
             -> SDL_Texture *;
 
         [[nodiscard]] auto render_position_from_window(sdl::fpoint window_point) -> sdl::fpoint;

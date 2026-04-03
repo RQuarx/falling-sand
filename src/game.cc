@@ -1,7 +1,9 @@
 #include <SDL3/SDL.h>
 
+#include "core/elements.hh"
 #include "game.hh"
 #include "logger.hh"
+#include "signal/method.hh"
 
 using kei::game;
 
@@ -30,7 +32,7 @@ namespace kei
 }
 
 
-game::game() noexcept : m_valid { true }
+game::game() noexcept : m_valid { true }, m_draw_element { core::elements::air.id }
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -44,6 +46,16 @@ game::game() noexcept : m_valid { true }
 
     m_cursor.connect_signals(m_event_handler, m_renderer);
     m_input_ctx.connect_signals(m_event_handler, m_gfx_ctx->render());
+
+    m_gfx_ctx->signal_on_frame() | sig::method(*this, &game::mf_on_frame);
+
+    m_event_handler[SDL_EVENT_QUIT] | [](const auto &) { return sdl::event_return::exit_success; };
+}
+
+
+game::~game()
+{
+    if (m_valid) SDL_Quit();
 }
 
 
@@ -62,10 +74,12 @@ game::run() noexcept -> int
             float dt { (current_time - last_frame_time) / 1000.F };
             last_frame_time = current_time;
 
+            m_input_ctx.on_frame_begin();
+
             switch (m_event_handler.poll())
             {
             case sdl::event_return::exit_fail:    return 1;
-            case sdl::event_return::exit_success: return 2;
+            case sdl::event_return::exit_success: return 0;
             case sdl::event_return::success:      break;
             }
 
@@ -76,6 +90,8 @@ game::run() noexcept -> int
                 m_simulation.draw(points, m_draw_element);
             }
 
+            m_simulation.update(dt);
+
             m_gfx_ctx->do_frame(0x000000_rgb);
         }
         catch (class error err)
@@ -84,4 +100,11 @@ game::run() noexcept -> int
             return 1;
         }
     return 0;
+}
+
+
+void
+game::mf_on_frame(gfx::context &ctx)
+{
+    m_renderer.render_grid(ctx, m_simulation.get_grid(), m_cursor);
 }

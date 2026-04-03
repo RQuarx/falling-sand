@@ -35,9 +35,8 @@ renderer::render_texture(resource<SDL_Texture, SDL_DestroyTexture> &texture,
 
 
 auto
-renderer::create_texture(SDL_PixelFormat   pixel_fmt,
-                         SDL_TextureAccess access,
-                         sdl::fsize        size) -> SDL_Texture *
+renderer::create_texture(SDL_PixelFormat pixel_fmt, SDL_TextureAccess access, sdl::size size)
+    -> SDL_Texture *
 {
     if (auto *t { SDL_CreateTexture(get(), pixel_fmt, access, size.w, size.h) }; t == nullptr)
         throw sdl::error_builder["sdl::renderer"]();

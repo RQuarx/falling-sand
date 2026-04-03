@@ -13,6 +13,7 @@ cursor::connect_signals(sdl::event_handler &event_handler, gfx::renderer &render
     event_handler[SDL_EVENT_MOUSE_MOTION] | sig::method(*this, &cursor::mf_on_mouse_motion);
     event_handler[SDL_EVENT_MOUSE_WHEEL] | sig::method(*this, &cursor::mf_on_mouse_wheel);
     event_handler[SDL_EVENT_KEY_DOWN] | sig::method(*this, &cursor::mf_on_key_down);
+
     renderer.signal_on_size_changed() | sig::method(*this, &cursor::mf_on_grid_size_changed);
 }
 
@@ -20,6 +21,7 @@ cursor::connect_signals(sdl::event_handler &event_handler, gfx::renderer &render
 auto
 cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::point> &
 {
+    m_draw_points.clear();
     sdl::point current_position { mf_mouse_position_to_grid_position(renderer, m_mouse.position) };
 
     if (!m_mouse.previous_position.has_value())
@@ -44,33 +46,33 @@ cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::po
 auto
 cursor::get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::point> &
 {
+    m_border_points.clear();
     sdl::point position { mf_mouse_position_to_grid_position(renderer, m_mouse.position) };
 
     constexpr std::array dx { 1, -1, 0, 0 };
     constexpr std::array dy { 0, 0, 1, -1 };
 
-    if (m_mouse.previous_position.has_value() && *m_mouse.previous_position != m_mouse.position)
-        mf_for_each_cell_in_shape(
-            position,
-            [&](int x, int y, auto)
+    mf_for_each_cell_in_shape(
+        position,
+        [&](int x, int y, auto)
+        {
+            bool is_border { false };
+
+            for (int i { 0 }; i < 4; i++)
             {
-                bool is_border { false };
+                sdl::point  n { .x = x + dx[i], .y = y + dy[i] };
+                sdl::fpoint normalized { .x = (n.x - position.x) / (m_size.w / 2.F),
+                                         .y = (n.y - position.y) / (m_size.h / 2.F) };
 
-                for (int i { 0 }; i < 4; i++)
+                if (!mf_is_inside_shape(normalized))
                 {
-                    sdl::point  n { .x = x + dx[i], .y = y + dy[i] };
-                    sdl::fpoint normalized { .x = (n.x - position.x) / (m_size.w / 2.F),
-                                             .y = (n.y - position.y) / (m_size.h / 2.F) };
-
-                    if (!mf_is_inside_shape(normalized))
-                    {
-                        is_border = true;
-                        break;
-                    }
+                    is_border = true;
+                    break;
                 }
+            }
 
-                if (is_border) m_border_points.emplace_back(x, y);
-            });
+            if (is_border) m_border_points.emplace_back(x, y);
+        });
 
     return m_border_points;
 }

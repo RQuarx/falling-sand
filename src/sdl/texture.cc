@@ -6,6 +6,8 @@ using kei::sdl::texture;
 auto
 texture::size() const -> sdl::fsize
 {
+    if (get() == nullptr) return { .w = NAN, .h = NAN };
+
     sdl::fsize size;
     if (!SDL_GetTextureSize(get(), &size.w, &size.h)) throw sdl::error_builder["sdl::texture"]();
     return size;
