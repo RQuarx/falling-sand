@@ -89,7 +89,7 @@ namespace kei::input
     public:
         context();
 
-        void connect_signals(sdl::event_handler &event_handler, sdl::renderer &renderer);
+        void connect_signals(sdl::event_handler &event_handler);
         void on_frame_begin();
 
 
@@ -129,6 +129,6 @@ namespace kei::input
         std::string m_text_input;
 
 
-        auto update(const sdl::event &ev, sdl::renderer &renderer) -> sdl::event_return;
+        auto update(const sdl::event &ev) -> sdl::event_return;
     };
 }

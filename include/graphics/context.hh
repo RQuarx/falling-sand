@@ -16,7 +16,7 @@ namespace kei::gfx
 
 
         [[nodiscard]] auto window() noexcept -> sdl::window &;
-        [[nodiscard]] auto render() noexcept -> sdl::renderer &;
+        [[nodiscard]] auto renderer() noexcept -> sdl::renderer &;
 
         void do_frame(sdl::color bg);
 
@@ -27,7 +27,7 @@ namespace kei::gfx
 
     private:
         sdl::window                  m_window;
-        sdl::renderer                m_render;
+        sdl::renderer                m_renderer;
         sig::signal<void, context &> m_on_frame_signal;
     };
 }

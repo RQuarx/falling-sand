@@ -25,8 +25,18 @@ namespace kei::ui
         void connect_signals(sdl::event_handler &event_handler, gfx::renderer &renderer);
 
 
-        auto get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::point> &;
-        auto get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::point> &;
+        [[nodiscard]]
+        auto get_points_to_draw(sdl::fpoint    mouse_pos1,
+                                sdl::fpoint    mouse_pos2,
+                                sdl::renderer &renderer) -> const std::vector<sdl::point> &;
+
+        [[nodiscard]]
+        auto get_points_to_draw(sdl::fpoint mouse_pos, sdl::renderer &renderer)
+            -> const std::vector<sdl::point> &;
+
+        [[nodiscard]]
+        auto get_points_to_render(sdl::fpoint mouse_pos, sdl::renderer &renderer)
+            -> const std::vector<sdl::point> &;
 
         [[nodiscard]]
         auto mouse_position_to_grid_position(sdl::renderer &renderer, sdl::fpoint position) const
@@ -34,12 +44,6 @@ namespace kei::ui
 
     private:
         cursor_shape m_shape { cursor_shape::circle };
-
-        struct mouse_position
-        {
-            std::optional<sdl::fpoint> previous_position;
-            sdl::fpoint                position { .x = 0, .y = 0 };
-        } m_mouse;
 
         struct grid_data
         {
@@ -83,7 +87,6 @@ namespace kei::ui
                      std::vector<bool>       *visited) const noexcept;
 
 
-        auto mf_on_mouse_motion(const sdl::event &event) -> sdl::event_return;
         auto mf_on_mouse_wheel(const sdl::event &event) -> sdl::event_return;
         auto mf_on_key_down(const sdl::event &event) -> sdl::event_return;
 

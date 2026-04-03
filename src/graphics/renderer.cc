@@ -66,8 +66,8 @@ namespace kei
     {
         float brightness { (0.2126F * c.r) + (0.7152F * c.g) + (0.0722F * c.b) };
 
-        if (brightness < 128.0F) return sdl::white;
-        return sdl::black;
+        if (brightness < 128.0F) return 0xffffffaa_rgba;
+        return 0x000000aa_rgba;
     }
 }
 
@@ -84,9 +84,9 @@ renderer::signal_on_size_changed() noexcept
 
 
 void
-renderer::render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor)
+renderer::render_grid_to_texture(gfx::context &ctx, const core::grid &grid)
 {
-    sdl::renderer &renderer { ctx.render() };
+    sdl::renderer &renderer { ctx.renderer() };
 
     if (sdl::size window_size { ctx.window().get_size_in_pixels() }; window_size != m_window_size)
     {
@@ -99,20 +99,33 @@ renderer::render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cur
     {
         sdl::texture_pixel pixels { m_grid_texture.lock(nullptr) };
 
-        const auto &cursor_border_points { cursor.get_points_to_render(renderer) };
-
         for (int y { 0 }; y < grid.size().h; y++)
             for (int x { 0 }; x < grid.size().w; x++)
                 pixels.set_color_at({ x, y },
                                     core::get_element_definition(grid[{ x, y }].element).color);
-
-        for (const auto &point : cursor_border_points)
-            pixels.set_color_at(
-                point, get_contrast_color(core::get_element_definition(grid[point].element).color));
     }
-
-    ctx.render().render_texture(m_grid_texture, nullptr, &m_layout.grid_rect);
 }
+
+
+void
+renderer::render_cursor_to_texture(gfx::context     &ctx,
+                                   const core::grid &grid,
+                                   ui::cursor       &cursor,
+                                   sdl::fpoint       mouse_pos)
+{
+    sdl::texture_pixel pixels { m_grid_texture.lock(nullptr) };
+
+    const auto &cursor_border_points { cursor.get_points_to_render(mouse_pos, ctx.renderer()) };
+
+    for (const auto &point : cursor_border_points)
+        pixels.set_color_at(
+            point, get_contrast_color(core::get_element_definition(grid[point].element).color));
+}
+
+
+void
+renderer::render_texture(gfx::context &ctx)
+{ ctx.renderer().render_texture(m_grid_texture, nullptr, &m_layout.grid_rect); }
 
 
 void

@@ -1,1 +1,1 @@
-ui_src = files('cursor.cc')
+ui_src = files('controller.cc', 'cursor.cc')

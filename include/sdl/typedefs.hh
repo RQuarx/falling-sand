@@ -1,4 +1,5 @@
 #pragma once
+#include <format>
 
 #include <SDL3/SDL_rect.h>
 
@@ -66,3 +67,21 @@ operator==(const kei::sdl::rect &a, const kei::sdl::rect &b) noexcept -> bool
 constexpr auto
 operator==(const kei::sdl::frect &a, const kei::sdl::frect &b) noexcept -> bool
 { return a.x == b.x && a.y == b.y && a.w == b.w && a.h == b.h; }
+
+
+namespace std
+{
+    /* clang-format off */
+    template <>
+    struct formatter<kei::sdl::point>
+    {
+        constexpr auto
+        parse(auto &ctx)
+        { return ctx.begin(); }
+
+        auto
+        format(const kei::sdl::point &pt, auto &ctx) const
+        { return format_to(ctx.out(), "({}, {})", pt.x, pt.y); }
+    };
+    /* clang-format off */
+}

@@ -26,8 +26,13 @@ namespace kei::gfx
         auto signal_on_size_changed() noexcept
             -> sig::signal_connect<decltype(m_signal_on_size_changed)>;
 
+        void render_grid_to_texture(gfx::context &ctx, const core::grid &grid);
+        void render_cursor_to_texture(gfx::context     &ctx,
+                                      const core::grid &grid,
+                                      ui::cursor       &cursor,
+                                      sdl::fpoint       mouse_pos);
 
-        void render_grid(gfx::context &ctx, const core::grid &grid, ui::cursor &cursor);
+        void render_texture(gfx::context &ctx);
 
     private:
         sdl::size    m_window_size;

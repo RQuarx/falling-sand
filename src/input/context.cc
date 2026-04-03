@@ -1,9 +1,6 @@
-#include <print>
 #include <utility>
 
 #include "input/context.hh"
-#include "sdl/renderer.hh"
-#include "signal/bind.hh"
 #include "signal/method.hh"
 
 using kei::input::context;
@@ -13,10 +10,9 @@ context::context() { m_mouse_buttons.fill(button_state::up); }
 
 
 void
-context::connect_signals(sdl::event_handler &event_handler, sdl::renderer &renderer)
+context::connect_signals(sdl::event_handler &event_handler)
 {
-    auto method { sig::bind(sig::method(*this, &context::update), sig::bind_to::position_1 {},
-                            std::ref(renderer)) };
+    auto method { sig::method(*this, &context::update) };
 
     event_handler[SDL_EVENT_MOUSE_MOTION] | method;
     event_handler[SDL_EVENT_MOUSE_BUTTON_DOWN] | method;
@@ -31,9 +27,6 @@ context::connect_signals(sdl::event_handler &event_handler, sdl::renderer &rende
 void
 context::on_frame_begin()
 {
-    m_cursor.current_position  = {};
-    m_cursor.previous_position = {};
-
     m_mouse_wheel = {};
 
     m_text_input.clear();
@@ -54,14 +47,13 @@ context::on_frame_begin()
 
 
 auto
-context::update(const sdl::event &ev, sdl::renderer &renderer) -> sdl::event_return
+context::update(const sdl::event &ev) -> sdl::event_return
 {
     switch (ev.type)
     {
     case SDL_EVENT_MOUSE_MOTION:
-        m_cursor.previous_position = std::exchange(
-            m_cursor.current_position,
-            renderer.render_position_from_window({ .x = ev.motion.x, .y = ev.motion.y }));
+        m_cursor.previous_position
+            = std::exchange(m_cursor.current_position, { .x = ev.motion.x, .y = ev.motion.y });
         break;
 
     case SDL_EVENT_MOUSE_WHEEL:

@@ -10,7 +10,6 @@ using kei::ui::cursor;
 void
 cursor::connect_signals(sdl::event_handler &event_handler, gfx::renderer &renderer)
 {
-    event_handler[SDL_EVENT_MOUSE_MOTION] | sig::method(*this, &cursor::mf_on_mouse_motion);
     event_handler[SDL_EVENT_MOUSE_WHEEL] | sig::method(*this, &cursor::mf_on_mouse_wheel);
     event_handler[SDL_EVENT_KEY_DOWN] | sig::method(*this, &cursor::mf_on_key_down);
 
@@ -19,19 +18,12 @@ cursor::connect_signals(sdl::event_handler &event_handler, gfx::renderer &render
 
 
 auto
-cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::point> &
+cursor::get_points_to_draw(sdl::fpoint mouse_pos1, sdl::fpoint mouse_pos2, sdl::renderer &renderer)
+    -> const std::vector<sdl::point> &
 {
     m_draw_points.clear();
-    sdl::point current_position { mouse_position_to_grid_position(renderer, m_mouse.position) };
-
-    if (!m_mouse.previous_position.has_value())
-    {
-        mf_draw(current_position, m_draw_points, nullptr);
-        return m_draw_points;
-    }
-
-    sdl::point previous_position { mouse_position_to_grid_position(renderer,
-                                                                   *m_mouse.previous_position) };
+    sdl::point previous_position { mouse_position_to_grid_position(renderer, mouse_pos2) };
+    sdl::point current_position { mouse_position_to_grid_position(renderer, mouse_pos1) };
 
     std::vector<bool> visited(static_cast<std::size_t>(m_grid.size.w * m_grid.size.h), false);
 
@@ -42,10 +34,22 @@ cursor::get_points_to_draw(sdl::renderer &renderer) -> const std::vector<sdl::po
 
 
 auto
-cursor::get_points_to_render(sdl::renderer &renderer) -> const std::vector<sdl::point> &
+cursor::get_points_to_draw(sdl::fpoint mouse_pos, sdl::renderer &renderer)
+    -> const std::vector<sdl::point> &
+{
+    m_draw_points.clear();
+
+    mf_draw(mouse_position_to_grid_position(renderer, mouse_pos), m_draw_points, nullptr);
+    return m_draw_points;
+}
+
+
+auto
+cursor::get_points_to_render(sdl::fpoint mouse_pos, sdl::renderer &renderer)
+    -> const std::vector<sdl::point> &
 {
     m_border_points.clear();
-    sdl::point position { mouse_position_to_grid_position(renderer, m_mouse.position) };
+    sdl::point position { mouse_position_to_grid_position(renderer, mouse_pos) };
     sdl::fsize half_size { (m_size.w - 0.5F) / 2.F, (m_size.h - 0.5F) / 2.F };
 
     constexpr std::array dx { 1, -1, 0, 0 };
@@ -137,15 +141,6 @@ cursor::mf_draw(sdl::point               position,
 
             points.emplace_back(x, y);
         });
-}
-
-
-auto
-cursor::mf_on_mouse_motion(const sdl::event &event) -> sdl::event_return
-{
-    m_mouse.previous_position = m_mouse.position;
-    m_mouse.position          = { .x = event.motion.x, .y = event.motion.y };
-    return sdl::event_return::success;
 }
 
 

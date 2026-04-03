@@ -32,7 +32,7 @@ namespace kei
 }
 
 
-game::game() noexcept : m_valid { true }, m_draw_element { core::elements::sand.id }
+game::game() noexcept : m_valid { true }
 {
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -44,12 +44,14 @@ game::game() noexcept : m_valid { true }, m_draw_element { core::elements::sand.
     m_gfx_ctx = std::make_unique<gfx::context>(
         "Kei's Falling Sand Game", 900, 600, SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_RESIZABLE);
 
-    m_cursor.connect_signals(m_event_handler, m_renderer);
-    m_input_ctx.connect_signals(m_event_handler, m_gfx_ctx->render());
+    m_ui_controller.connect_signals(m_event_handler, m_renderer);
+    m_input_ctx.connect_signals(m_event_handler);
 
     m_gfx_ctx->signal_on_frame() | sig::method(*this, &game::mf_on_frame);
 
     m_event_handler[SDL_EVENT_QUIT] | [](const auto &) { return sdl::event_return::exit_success; };
+
+    m_simulation.set_draw_element(core::elements::sand.id);
 }
 
 
@@ -83,13 +85,6 @@ game::run() noexcept -> int
             case sdl::event_return::success:      break;
             }
 
-            if (m_input_ctx.is_button_states()[SDL_BUTTON_LEFT, SDL_BUTTON_RIGHT](
-                    button_state::down, button_state::pressed))
-            {
-                const auto &points { m_cursor.get_points_to_draw(m_gfx_ctx->render()) };
-                m_simulation.draw(points, m_draw_element);
-            }
-
             m_simulation.update(dt);
 
             m_gfx_ctx->do_frame(0x000000_rgb);
@@ -106,5 +101,7 @@ game::run() noexcept -> int
 void
 game::mf_on_frame(gfx::context &ctx)
 {
-    m_renderer.render_grid(ctx, m_simulation.get_grid(), m_cursor);
+    m_renderer.render_grid_to_texture(ctx, m_simulation.get_grid());
+    m_ui_controller.on_frame(m_simulation, m_renderer, ctx, m_input_ctx);
+    m_renderer.render_texture(ctx);
 }

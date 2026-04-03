@@ -3,7 +3,7 @@
 #include "graphics/context.hh"
 #include "graphics/renderer.hh"
 #include "input/context.hh"
-#include "ui/cursor.hh"
+#include "ui/controller.hh"
 
 
 namespace kei
@@ -28,9 +28,7 @@ namespace kei
         gfx::renderer m_renderer;
 
         core::simulation m_simulation;
-        ui::cursor       m_cursor;
-
-        int m_draw_element;
+        ui::controller   m_ui_controller;
 
 
         void mf_on_frame(gfx::context &ctx);
