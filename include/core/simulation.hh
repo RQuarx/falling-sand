@@ -6,6 +6,9 @@
 
 namespace kei::core
 {
+    inline constexpr float GRAVITY { 10 };
+
+
     class simulation
     {
     public:
@@ -23,6 +26,10 @@ namespace kei::core
         grid m_grid;
         int  m_draw_element;
 
-        std::vector<sdl::point> m_active_cells;
+        std::vector<sdl::point>                        m_active_cells;
+        std::vector<std::pair<sdl::point, sdl::point>> m_cells_to_update;
+
+
+        void mf_set_point_to(sdl::point point, int element);
     };
 }

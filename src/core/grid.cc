@@ -7,7 +7,7 @@ using kei::core::grid;
 
 grid::grid()
 {
-    set_size({ .w = 616, .h = 381 });
+    set_size({ .w = 611, .h = 381 });
 }
 
 
@@ -28,6 +28,13 @@ grid::clear()
 auto
 grid::size() const noexcept -> sdl::size
 { return m_size; }
+
+
+auto
+grid::is_in_bounds(sdl::point point) const noexcept -> bool
+{
+    return point.x >= 0 && point.y >= 0 && point.x < size().w && point.y < size().h;
+}
 
 
 auto

@@ -9,10 +9,6 @@ namespace kei::core
     {
         friend class grid;
 
-    private:
-        bool m_is_updated { false };
-
-    public:
         int        element;
         sdl::color color;
 

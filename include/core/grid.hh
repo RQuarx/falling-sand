@@ -20,6 +20,8 @@ namespace kei::core
         void set_size(sdl::size new_size);
         void clear();
 
+        [[nodiscard]] auto is_in_bounds(sdl::point point) const noexcept -> bool;
+
 
         [[nodiscard]] auto size() const noexcept -> sdl::size;
 

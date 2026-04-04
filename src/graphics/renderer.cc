@@ -66,8 +66,23 @@ namespace kei
     {
         float brightness { (0.2126F * c.r) + (0.7152F * c.g) + (0.0722F * c.b) };
 
-        if (brightness < 128.0F) return 0xffffffaa_rgba;
-        return 0x000000aa_rgba;
+        sdl::color overlay { (brightness < 128.0F) ? 0xffffffaa_rgba : 0x00000077_rgba };
+
+        float alpha_base { c.a / 255.0F };
+        float alpha_over { overlay.a / 255.0F };
+
+        float out_alpha { alpha_over + (alpha_base * (1.0F - alpha_over)) };
+
+        if (out_alpha == 0.0F) { return { 0, 0, 0, 0 }; }
+
+        sdl::color out;
+
+        out.r = (((overlay.r * alpha_over) + (c.r * alpha_base * (1.F - alpha_over))) / out_alpha);
+        out.g = (((overlay.g * alpha_over) + (c.g * alpha_base * (1.F - alpha_over))) / out_alpha);
+        out.b = (((overlay.b * alpha_over) + (c.b * alpha_base * (1.F - alpha_over))) / out_alpha);
+        out.a = (out_alpha * 255.0F);
+
+        return out;
     }
 }
 
@@ -117,8 +132,7 @@ renderer::render_cursor_to_texture(gfx::context     &ctx,
     const auto &cursor_border_points { cursor.get_points_to_render(mouse_pos, ctx.renderer()) };
 
     for (const auto &point : cursor_border_points)
-        pixels.set_color_at(
-            point, get_contrast_color(core::get_element_definition(grid[point].element).color));
+        pixels.set_color_at(point, get_contrast_color(grid[point].color));
 }
 
 

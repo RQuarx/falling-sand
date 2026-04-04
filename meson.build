@@ -10,6 +10,6 @@ deps = [ dependency('SDL3'), dependency('SDL3_image'), ]
 subdir('src')
 
 executable('falling-sand', src,
-           cpp_args: [ '-fno-omit-frame-pointer' ],
+           cpp_args: [  ],
            include_directories: include_directories('include'),
            dependencies:        deps)
