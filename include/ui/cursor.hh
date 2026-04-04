@@ -52,9 +52,11 @@ namespace kei::ui
         } m_grid;
 
         sdl::size m_size { .w = 10, .h = 10 };
+        sdl::point m_previous_position;
 
         std::vector<sdl::point> m_draw_points;
         std::vector<sdl::point> m_border_points;
+        std::vector<bool>       m_visited;
 
 
         void
@@ -82,9 +84,8 @@ namespace kei::ui
 
         [[nodiscard]]
         auto mf_is_inside_shape(sdl::fpoint normalized_position) const noexcept -> bool;
-        void mf_draw(sdl::point               position,
-                     std::vector<sdl::point> &points,
-                     std::vector<bool>       *visited) const noexcept;
+        void mf_update_visited();
+        void mf_draw(sdl::point position, std::vector<sdl::point> &points) noexcept;
 
 
         auto mf_on_mouse_wheel(const sdl::event &event) -> sdl::event_return;

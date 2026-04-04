@@ -83,5 +83,18 @@ namespace std
         format(const kei::sdl::point &pt, auto &ctx) const
         { return format_to(ctx.out(), "({}, {})", pt.x, pt.y); }
     };
+
+
+    template <>
+    struct formatter<kei::sdl::fpoint>
+    {
+        constexpr auto
+        parse(auto &ctx)
+        { return ctx.begin(); }
+
+        auto
+        format(const kei::sdl::fpoint &pt, auto &ctx) const
+        { return format_to(ctx.out(), "({}, {})", pt.x, pt.y); }
+    };
     /* clang-format off */
 }

@@ -5,16 +5,12 @@ using kei::core::simulation;
 
 auto
 simulation::get_grid() const noexcept -> const grid &
-{
-    return m_grid;
-}
+{ return m_grid; }
 
 
 void
 simulation::set_draw_element(int id)
-{
-    m_draw_element = id;
-}
+{ m_draw_element = id; }
 
 
 void
@@ -40,7 +36,11 @@ simulation::draw(std::span<const sdl::point> cells)
 
     for (const auto &p : cells)
     {
-        m_grid[p] = cell { m_draw_element };
+        cell &c { m_grid[p] };
+
+        if (c.element == m_draw_element) continue;
+
+        c = cell { m_draw_element };
         m_active_cells.emplace_back(p);
     }
 }
@@ -49,5 +49,4 @@ simulation::draw(std::span<const sdl::point> cells)
 void
 simulation::update(float delta_time)
 {
-
 }

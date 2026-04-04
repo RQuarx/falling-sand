@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <print>
 
 #include "signal/method.hh"
 #include "ui/cursor.hh"
@@ -22,13 +23,17 @@ cursor::get_points_to_draw(sdl::fpoint mouse_pos1, sdl::fpoint mouse_pos2, sdl::
     -> const std::vector<sdl::point> &
 {
     m_draw_points.clear();
-    sdl::point previous_position { mouse_position_to_grid_position(renderer, mouse_pos2) };
-    sdl::point current_position { mouse_position_to_grid_position(renderer, mouse_pos1) };
+    mf_update_visited();
 
-    std::vector<bool> visited(static_cast<std::size_t>(m_grid.size.w * m_grid.size.h), false);
+    sdl::point previous_position { mouse_position_to_grid_position(renderer, mouse_pos1) };
+    sdl::point current_position { mouse_position_to_grid_position(renderer, mouse_pos2) };
 
+    for (auto pos : views::bresenham(m_previous_position, current_position))
+        mf_draw(pos, m_draw_points);
     for (auto pos : views::bresenham(previous_position, current_position))
-        mf_draw(pos, m_draw_points, &visited);
+        mf_draw(pos, m_draw_points);
+
+    m_previous_position = current_position;
     return m_draw_points;
 }
 
@@ -38,8 +43,11 @@ cursor::get_points_to_draw(sdl::fpoint mouse_pos, sdl::renderer &renderer)
     -> const std::vector<sdl::point> &
 {
     m_draw_points.clear();
+    mf_update_visited();
 
-    mf_draw(mouse_position_to_grid_position(renderer, mouse_pos), m_draw_points, nullptr);
+    m_previous_position = mouse_position_to_grid_position(renderer, mouse_pos);
+
+    mf_draw(m_previous_position, m_draw_points);
     return m_draw_points;
 }
 
@@ -124,23 +132,26 @@ cursor::mf_is_inside_shape(sdl::fpoint normalized_pos) const noexcept -> bool
 
 
 void
-cursor::mf_draw(sdl::point               position,
-                std::vector<sdl::point> &points,
-                std::vector<bool>       *visited) const noexcept
+cursor::mf_update_visited()
 {
-    mf_for_each_cell_in_shape(
-        position,
-        [&](int x, int y, auto)
-        {
-            if (visited != nullptr)
-            {
-                auto idx { static_cast<std::size_t>((y * m_grid.size.w) + x) };
-                if ((*visited)[idx]) return;
-                (*visited)[idx] = true;
-            }
+    auto grid_size { static_cast<std::size_t>(m_grid.size.w) * m_grid.size.h };
+    if (m_visited.size() != grid_size) m_visited.resize(grid_size);
+    std::ranges::fill(m_visited, false);
+}
 
-            points.emplace_back(x, y);
-        });
+
+void
+cursor::mf_draw(sdl::point position, std::vector<sdl::point> &points) noexcept
+{
+    mf_for_each_cell_in_shape(position,
+                              [&](int x, int y, auto)
+                              {
+                                  auto idx { static_cast<std::size_t>((y * m_grid.size.w) + x) };
+                                  if (m_visited[idx]) return;
+                                  m_visited[idx] = true;
+
+                                  points.emplace_back(x, y);
+                              });
 }
 
 
