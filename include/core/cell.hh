@@ -1,4 +1,5 @@
 #pragma once
+#include "sdl/color.hh"
 #include "sdl/typedefs.hh"
 
 
@@ -12,7 +13,8 @@ namespace kei::core
         bool m_is_updated { false };
 
     public:
-        int element;
+        int        element;
+        sdl::color color;
 
         sdl::fpoint velocity;
         float       temperature;

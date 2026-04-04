@@ -1,6 +1,5 @@
 #pragma once
 #include <cstdint>
-#include <optional>
 
 #include "graphics/renderer.hh"
 #include "sdl/event.hh"

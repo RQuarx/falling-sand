@@ -101,8 +101,7 @@ renderer::render_grid_to_texture(gfx::context &ctx, const core::grid &grid)
 
         for (int y { 0 }; y < grid.size().h; y++)
             for (int x { 0 }; x < grid.size().w; x++)
-                pixels.set_color_at({ x, y },
-                                    core::get_element_definition(grid[{ x, y }].element).color);
+                pixels.set_color_at({ x, y }, grid[{ x, y }].color);
     }
 }
 

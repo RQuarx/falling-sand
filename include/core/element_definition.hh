@@ -15,6 +15,7 @@ namespace kei::core
         const std::string_view name;
         const int              id {};
         const sdl::color       color;
+        const int              random_color_range;
 
 
         const float mass {};

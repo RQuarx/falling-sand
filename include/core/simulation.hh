@@ -10,6 +10,7 @@ namespace kei::core
     {
     public:
         [[nodiscard]] auto get_grid() const noexcept -> const grid &;
+        [[nodiscard]] auto get_draw_element() const noexcept -> int;
 
         void set_size(sdl::size new_size);
         void set_draw_element(int id);

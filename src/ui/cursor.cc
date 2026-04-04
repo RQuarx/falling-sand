@@ -1,5 +1,4 @@
 #include <cstddef>
-#include <print>
 
 #include "signal/method.hh"
 #include "ui/cursor.hh"
